@@ -30,7 +30,6 @@ class Signup : AppCompatActivity() {
     private lateinit var btnGallery: Button
     private lateinit var btnUploadImage: Button
 
-    private var authFlag: Boolean = false
     private var uri : Uri? = null
 
 
