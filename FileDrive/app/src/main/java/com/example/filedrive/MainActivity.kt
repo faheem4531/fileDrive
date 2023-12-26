@@ -15,6 +15,7 @@ import com.example.filedrive.databinding.ActivityMainBinding
 
 
 import android.content.Intent
+import android.view.MenuItem
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -79,15 +80,6 @@ class MainActivity : AppCompatActivity() {
                     finish()
                     true
                 }
-//                R.id.restart_app ->{
-//                    startActivity(Intent(this,Signup::class.java))
-//                    finish()
-//                    true
-//                }
-//                R.id.close_app ->{
-//                    finishAffinity()
-//                    true
-//                }
                 else -> {
                     // Perform fragment navigation for other menu items
                     menuItem.isChecked = true
@@ -102,7 +94,6 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun displayUserInfo(auth: FirebaseAuth) {
-
 
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         val dbRef = FirebaseDatabase.getInstance().getReference("Users").child(userId.toString())
@@ -155,7 +146,25 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)
+
         return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        when(item.itemId){
+            R.id.close_app -> {
+                finishAffinity()
+                true
+            }
+            R.id.restart_app -> {
+                startActivity(Intent(this,Signup::class.java))
+                finish()
+                true
+            }
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 
     override fun onSupportNavigateUp(): Boolean {
