@@ -167,7 +167,7 @@ class Signup : AppCompatActivity() {
 
                 //     Store user Data in DB
                 val userId = FirebaseAuth.getInstance().currentUser?.uid
-                dbRef=FirebaseDatabase.getInstance().getReference("Signup").child(userId.toString())
+                dbRef=FirebaseDatabase.getInstance().getReference("Users").child(userId.toString())
                 val signupDetails = SignupClass(name_,email_,uri.toString())
                 dbRef.setValue(signupDetails)
 
@@ -185,7 +185,7 @@ class Signup : AppCompatActivity() {
     }
 
     fun signinIntent(view: View){
-//        startActivity(Intent(this, Login::class.java))
+        startActivity(Intent(this, Login::class.java))
     }
 
 }
