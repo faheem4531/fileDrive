@@ -2,10 +2,8 @@ package com.example.filedrive
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.app.Activity
 import android.content.Intent
 import android.net.Uri
-import android.provider.MediaStore
 import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
@@ -14,11 +12,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
-import androidx.activity.result.ActivityResultCaller
-import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
-//import com.bumptech.glide.Glide
-//import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
