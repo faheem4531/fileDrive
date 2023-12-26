@@ -160,7 +160,7 @@ class Signup : AppCompatActivity() {
 
                 //     Store user Data in DB
                 val userId = FirebaseAuth.getInstance().currentUser?.uid
-                dbRef=FirebaseDatabase.getInstance().getReference("Users").child(userId.toString())
+                dbRef = FirebaseDatabase.getInstance().getReference("Users").child(userId.toString())
                 val signupDetails = SignupClass(name_,email_,uri.toString())
                 dbRef.setValue(signupDetails)
 

@@ -20,6 +20,7 @@ import com.example.filedrive.databinding.FragmentGalleryBinding
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.storage
 
@@ -70,12 +71,18 @@ class GalleryFragment : Fragment() {
     private fun UploadImage() {
         uri?.let {
             var userId = FirebaseAuth.getInstance().currentUser?.uid
+            dbRef = FirebaseDatabase.getInstance().getReference("Users").child(userId.toString()).child("galleryImagesUrl")
+
             dbStorage.getReference("Gallery Images").child(userId.toString()).child(System.currentTimeMillis().toString())
                 .putFile(it)
                 .addOnSuccessListener { task->
                     task.metadata?.reference?.downloadUrl?.addOnSuccessListener { url ->
                         uri = url
                         Toast.makeText(requireContext(), "upload sucess", Toast.LENGTH_SHORT).show()
+
+                        //store image url in realTime database
+
+                        dbRef.push().setValue(uri.toString())
                     }
                         ?.addOnFailureListener{
                             Toast.makeText(requireContext(), it.toString(), Toast.LENGTH_SHORT).show()
