@@ -2,11 +2,14 @@ package com.example.filedrive.ui.gallery
 
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
@@ -20,13 +23,17 @@ import com.example.filedrive.R
 import com.example.filedrive.databinding.FragmentGalleryBinding
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.storage
 
 class GalleryFragment : Fragment() {
 
+    //storing variables
     private lateinit var dbRef: DatabaseReference
     private  var dbStorage= Firebase.storage
     private lateinit var uploadImage : ImageView
@@ -34,6 +41,11 @@ class GalleryFragment : Fragment() {
 
     private var uri : Uri ?= null
 
+    //fetching declaration
+    private lateinit var listView : ListView
+    private lateinit var showImages: ImageView
+    private lateinit var adapter: ArrayAdapter<String>
+    private val imagesUrlArray = mutableListOf("")
 
 
     private var _binding: FragmentGalleryBinding? = null
@@ -53,6 +65,17 @@ class GalleryFragment : Fragment() {
         dbStorage = FirebaseStorage.getInstance()
         uploadImage  = root.findViewById (R.id.uploadImage)
         progresGallery = root.findViewById (R.id.uploadImageProgress)
+        showImages = root.findViewById  (R.id.displayImages)
+        listView = root.findViewById (R.id.imageListView)
+
+
+        // Initialize dbRef after Firebase initialization
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        userId?.let {
+            dbRef = FirebaseDatabase.getInstance().getReference("Users").child(userId)
+                .child("galleryImagesUrl")
+        }
+
 
         var galleryImage = registerForActivityResult(
             ActivityResultContracts.GetContent(),
@@ -68,21 +91,30 @@ class GalleryFragment : Fragment() {
             galleryImage.launch("image/*")
         }
 
+//        dbRef.addValueEventListener(object : ValueEventListener{
+//            override fun onDataChange(snapshot: DataSnapshot) {
+//                imagesUrlArray.clear()
+//                for (image in snapshot.children){
+//                    val currentImage = image.getValue(String::class.java)
+//                    currentImage?.let {
+//                        imagesUrlArray.add(it)
+//                    }
+//                }
+//                adapter.notifyDataSetChanged()
+//            }
+//
+//            override fun onCancelled(error: DatabaseError) {
+//                Log.e("Firebase", "Error: ${error.message}")
+//            }
+//        })
+
+//        Apply Adapter
+//        adapter = ArrayAdapter(requireContext(),R.layout.fragment_gallery,imagesUrlArray )
+//        listView.adapter= adapter
+
+
         return root
     }
-
-//    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-//        super.onViewCreated(view, savedInstanceState)
-//        var galleryImage = registerForActivityResult(
-//            ActivityResultContracts.GetContent(),
-//            ActivityResultCallback { imageUri ->
-//                imageUri?.let {
-//                    uri = imageUri
-//                    uploadImage(imageUri)
-//                }
-//            }
-//        )
-//    }
 
     private fun uploadImage(imageUri: Uri) {
 
@@ -91,8 +123,6 @@ class GalleryFragment : Fragment() {
             progresGallery.visibility = View.VISIBLE
 
             var userId = FirebaseAuth.getInstance().currentUser?.uid
-            dbRef = FirebaseDatabase.getInstance().getReference("Users").child(userId.toString())
-                .child("galleryImagesUrl")
 
             dbStorage.getReference("Gallery Images").child(userId.toString())
                 .child(System.currentTimeMillis().toString())
