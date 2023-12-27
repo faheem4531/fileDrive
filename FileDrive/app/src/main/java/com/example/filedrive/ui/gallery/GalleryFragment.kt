@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.ProgressBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
@@ -29,6 +30,7 @@ class GalleryFragment : Fragment() {
     private lateinit var dbRef: DatabaseReference
     private  var dbStorage= Firebase.storage
     private lateinit var uploadImage : ImageView
+    private lateinit var progresGallery : ProgressBar
 
     private var uri : Uri ?= null
 
@@ -50,42 +52,68 @@ class GalleryFragment : Fragment() {
         // Code Starting
         dbStorage = FirebaseStorage.getInstance()
         uploadImage  = root.findViewById (R.id.uploadImage)
+        progresGallery = root.findViewById (R.id.uploadImageProgress)
 
         var galleryImage = registerForActivityResult(
             ActivityResultContracts.GetContent(),
-          ActivityResultCallback  {Url->
-                Url?.let{
-                    uri = Url
+          ActivityResultCallback  {url->
+                url?.let{
+                    uri = url
+                    uploadImage(url)
                 }
             }
         )
 
         uploadImage.setOnClickListener{
             galleryImage.launch("image/*")
-            UploadImage()
         }
 
         return root
     }
 
-    private fun UploadImage() {
-        uri?.let {
-            var userId = FirebaseAuth.getInstance().currentUser?.uid
-            dbRef = FirebaseDatabase.getInstance().getReference("Users").child(userId.toString()).child("galleryImagesUrl")
+//    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+//        super.onViewCreated(view, savedInstanceState)
+//        var galleryImage = registerForActivityResult(
+//            ActivityResultContracts.GetContent(),
+//            ActivityResultCallback { imageUri ->
+//                imageUri?.let {
+//                    uri = imageUri
+//                    uploadImage(imageUri)
+//                }
+//            }
+//        )
+//    }
 
-            dbStorage.getReference("Gallery Images").child(userId.toString()).child(System.currentTimeMillis().toString())
-                .putFile(it)
-                .addOnSuccessListener { task->
+    private fun uploadImage(imageUri: Uri) {
+
+    imageUri?.let {
+            uploadImage.visibility = View.GONE
+            progresGallery.visibility = View.VISIBLE
+
+            var userId = FirebaseAuth.getInstance().currentUser?.uid
+            dbRef = FirebaseDatabase.getInstance().getReference("Users").child(userId.toString())
+                .child("galleryImagesUrl")
+
+            dbStorage.getReference("Gallery Images").child(userId.toString())
+                .child(System.currentTimeMillis().toString())
+                .putFile(imageUri)
+                .addOnSuccessListener { task ->
                     task.metadata?.reference?.downloadUrl?.addOnSuccessListener { url ->
                         uri = url
                         Toast.makeText(requireContext(), "upload sucess", Toast.LENGTH_SHORT).show()
 
-                        //store image url in realTime database
 
-                        dbRef.push().setValue(uri.toString())
+                        //store image url in realTime database
+                        dbRef.push().setValue(uri.toString()).addOnFailureListener {
+                            Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_SHORT).show()
+                        }
+
+                        uploadImage.visibility = View.VISIBLE
+                        progresGallery.visibility = View.GONE
                     }
-                        ?.addOnFailureListener{
-                            Toast.makeText(requireContext(), it.toString(), Toast.LENGTH_SHORT).show()
+                        ?.addOnFailureListener {
+                            Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_SHORT)
+                                .show()
                         }
                 }
         }
