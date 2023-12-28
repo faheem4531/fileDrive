@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.ListView
 import android.widget.ProgressBar
 import android.widget.TextView
@@ -19,8 +20,11 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.findViewTreeViewModelStoreOwner
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.filedrive.R
 import com.example.filedrive.databinding.FragmentGalleryBinding
+import com.example.filedrive.ui.ImageAdapter
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -42,10 +46,14 @@ class GalleryFragment : Fragment() {
     private var uri : Uri ?= null
 
     //fetching declaration
-    private lateinit var listView : ListView
-    private lateinit var showImages: ImageView
-    private lateinit var adapter: ArrayAdapter<String>
-    private val imagesUrlArray = mutableListOf("")
+//    private lateinit var listView : ListView
+//    private lateinit var showImages: ImageView
+//    private lateinit var adapter: ArrayAdapter<String>
+//    private val imagesUrlArray = mutableListOf("")
+
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var listImages: ArrayList<String>
+
 
 
     private var _binding: FragmentGalleryBinding? = null
@@ -65,8 +73,12 @@ class GalleryFragment : Fragment() {
         dbStorage = FirebaseStorage.getInstance()
         uploadImage  = root.findViewById (R.id.uploadImage)
         progresGallery = root.findViewById (R.id.uploadImageProgress)
-        showImages = root.findViewById  (R.id.displayImages)
-        listView = root.findViewById (R.id.imageListView)
+//        showImages = root.findViewById  (R.id.displayImages)
+//        listView = root.findViewById (R.id.imageListView)
+
+        recyclerView= root.findViewById (R.id.recycler)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        listImages = arrayListOf()
 
 
         // Initialize dbRef after Firebase initialization
@@ -90,6 +102,24 @@ class GalleryFragment : Fragment() {
         uploadImage.setOnClickListener{
             galleryImage.launch("image/*")
         }
+
+        dbRef.addValueEventListener(object :ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()){
+                    for (image in snapshot.children){
+                        val currentImage = image.getValue(String::class.java)
+                        listImages.add(currentImage!!)  // !! means shouldn't be null
+                    }
+                    recyclerView.adapter = ImageAdapter (requireContext(), listImages)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(requireContext(), error.toString(), Toast.LENGTH_SHORT).show()
+            }
+
+        })
+
 
 //        dbRef.addValueEventListener(object : ValueEventListener{
 //            override fun onDataChange(snapshot: DataSnapshot) {
