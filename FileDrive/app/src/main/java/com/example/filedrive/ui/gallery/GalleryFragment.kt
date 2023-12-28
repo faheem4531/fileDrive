@@ -46,11 +46,6 @@ class GalleryFragment : Fragment() {
     private var uri : Uri ?= null
 
     //fetching declaration
-//    private lateinit var listView : ListView
-//    private lateinit var showImages: ImageView
-//    private lateinit var adapter: ArrayAdapter<String>
-//    private val imagesUrlArray = mutableListOf("")
-
     private lateinit var recyclerView: RecyclerView
     private lateinit var listImages: ArrayList<String>
 
@@ -73,8 +68,6 @@ class GalleryFragment : Fragment() {
         dbStorage = FirebaseStorage.getInstance()
         uploadImage  = root.findViewById (R.id.uploadImage)
         progresGallery = root.findViewById (R.id.uploadImageProgress)
-//        showImages = root.findViewById  (R.id.displayImages)
-//        listView = root.findViewById (R.id.imageListView)
 
         recyclerView= root.findViewById (R.id.recycler)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -119,29 +112,6 @@ class GalleryFragment : Fragment() {
             }
 
         })
-
-
-//        dbRef.addValueEventListener(object : ValueEventListener{
-//            override fun onDataChange(snapshot: DataSnapshot) {
-//                imagesUrlArray.clear()
-//                for (image in snapshot.children){
-//                    val currentImage = image.getValue(String::class.java)
-//                    currentImage?.let {
-//                        imagesUrlArray.add(it)
-//                    }
-//                }
-//                adapter.notifyDataSetChanged()
-//            }
-//
-//            override fun onCancelled(error: DatabaseError) {
-//                Log.e("Firebase", "Error: ${error.message}")
-//            }
-//        })
-
-//        Apply Adapter
-//        adapter = ArrayAdapter(requireContext(),R.layout.fragment_gallery,imagesUrlArray )
-//        listView.adapter= adapter
-
 
         return root
     }
