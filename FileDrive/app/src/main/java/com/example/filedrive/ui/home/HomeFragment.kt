@@ -1,5 +1,6 @@
 package com.example.filedrive.ui.home
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -19,6 +20,7 @@ import com.example.filedrive.R
 import com.example.filedrive.Signup
 import com.example.filedrive.ViewFullImage
 import com.example.filedrive.ui.ImageAdapter
+import com.example.filedrive.ui.UrlDataClass
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -40,7 +42,7 @@ class HomeFragment : Fragment() {
 
     //fetching declaration
     private lateinit var recyclerView: RecyclerView
-    private lateinit var listImages: ArrayList<String>
+    private lateinit var listImages: ArrayList<UrlDataClass>
 
 
 
@@ -99,16 +101,32 @@ class HomeFragment : Fragment() {
                 if (snapshot.exists()){
                     noImage.visibility = View.GONE
                     for (image in snapshot.children){
-                        val currentImage = image.getValue(String::class.java)
-                        listImages.add(currentImage!!)  // !! means shouldn't be null
+                        val urlData  = image.getValue(UrlDataClass::class.java)
+                        if (urlData  != null && urlData.deleteFlag != true) {
+                            listImages.add(urlData!!)
+                        }
                     }
-                    imageLoader.visibility= View.GONE
+
                     imageLoader.visibility= View.GONE
                     val adapter = ImageAdapter(requireContext(), listImages,
                         { imageUrl ->
                     },
                         // Handle long click event here
                         { imageUrl ->
+
+                            val builder = AlertDialog.Builder(requireContext())
+                            builder.setTitle("Options")
+                                .setItems(arrayOf("Delete", "Rename")) { _, which ->
+                                    when (which) {
+                                        0 -> confirmDelete(imageUrl)
+                                        1 -> downloadImage(imageUrl)
+                                    }
+                                }
+                                .setNegativeButton("Cancel") { dialog, _ ->
+                                    dialog.dismiss()
+                                }
+                            builder.show()
+
                             Toast.makeText(requireContext(), "Long Clicked", Toast.LENGTH_SHORT).show()
                     })
                     recyclerView.adapter = adapter
@@ -128,7 +146,27 @@ class HomeFragment : Fragment() {
         return root
     }
 
+    private fun confirmDelete(imageUrl: String) {
+        val dialogBuilder = AlertDialog.Builder(requireContext())
+        dialogBuilder.setMessage("Are you sure you want to delete this image?")
+            .setCancelable(false)
+            .setPositiveButton("Yes") { _, _ ->
 
+                Toast.makeText(requireContext(), "kam ho gia ha ", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("No") { dialog, _ ->
+                dialog.dismiss()
+            }
+
+        val alert = dialogBuilder.create()
+        alert.setTitle("Confirmation")
+        alert.show()
+    }
+
+    private fun downloadImage(imageUrl: String) {
+        // Implement logic for renaming the image
+        // You can show a dialog or navigate to a screen for renaming the image
+    }
 
 //    private fun uploadImage(imageUri: Uri) {
 //

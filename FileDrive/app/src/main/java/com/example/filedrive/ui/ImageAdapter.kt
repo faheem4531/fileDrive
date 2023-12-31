@@ -13,10 +13,12 @@ import com.example.filedrive.ViewFullImage
 
 class ImageAdapter(
     private val context: Context,
-    private val listImages: ArrayList<String>,
+    private val listImages: ArrayList<UrlDataClass>,
     private val imageClickListener: (String) -> Unit,
     private val imageLongClickListener: (String) -> Unit
 ) : RecyclerView.Adapter<ImageAdapter.ViewHolder> () {
+
+    private var selectedItems: HashSet<Int> = HashSet()
 
     class ViewHolder (itemView: View) : RecyclerView.ViewHolder(itemView){
         val imageView: ImageView = itemView.findViewById(R.id.imageView2)
@@ -29,13 +31,13 @@ class ImageAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val imageUrl = listImages[position]
+        val imageUrl = listImages[position].url.toString()
 
-        Glide.with(context).load(listImages[position]).into(holder.imageView)
+        Glide.with(context).load(listImages[position].url).into(holder.imageView)
 
         // Click listener
         holder.imageView.setOnClickListener {
-            // Pass the clicked image URL to the click listener
+
             val intent = Intent(context, ViewFullImage::class.java)
             intent.putExtra("IMAGE_URL", imageUrl)
             context.startActivity(intent)
@@ -45,13 +47,32 @@ class ImageAdapter(
 
         // Long click listener
         holder.imageView.setOnLongClickListener {
-            // Pass the long-clicked image URL to the long click listener
             imageLongClickListener.invoke(imageUrl)
             true // Consume the long click event
         }
+
+        holder.itemView.isActivated = selectedItems.contains(position)
     }
 
     override fun getItemCount(): Int {
         return listImages.size
+    }
+
+    fun toggleSelection(position: Int) {
+        if (selectedItems.contains(position)) {
+            selectedItems.remove(position)
+        } else {
+            selectedItems.add(position)
+        }
+        notifyItemChanged(position)
+    }
+
+    fun clearSelection() {
+        selectedItems.clear()
+        notifyDataSetChanged()
+    }
+
+    fun getSelectedItems(): Set<Int> {
+        return selectedItems
     }
 }

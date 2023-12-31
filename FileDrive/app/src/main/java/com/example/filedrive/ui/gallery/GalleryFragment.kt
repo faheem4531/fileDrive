@@ -24,6 +24,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.storage
 import androidx.activity.result.ActivityResultCallback
+import com.example.filedrive.ui.UrlDataClass
 
 class GalleryFragment : Fragment() {
 
@@ -37,7 +38,7 @@ class GalleryFragment : Fragment() {
     //Declarations
     private lateinit var dbRef: DatabaseReference
     private lateinit var recyclerView: RecyclerView
-    private lateinit var listImages: ArrayList<String>
+    private lateinit var listImages: ArrayList<UrlDataClass>
 
 
 
@@ -91,8 +92,10 @@ class GalleryFragment : Fragment() {
                 if (snapshot.exists()){
                     noImage.visibility = View.GONE
                     for (image in snapshot.children){
-                        val currentImage = image.getValue(String::class.java)
-                        listImages.add(currentImage!!)  // !! means shouldn't be null
+                        val urlData  = image.getValue(UrlDataClass::class.java)
+                        if (urlData  != null && urlData.deleteFlag != true) {
+                            listImages.add(urlData)
+                        }
                     }
                     imageLoader.visibility= View.GONE
                     val adapter = ImageAdapter(requireContext(), listImages,
@@ -139,7 +142,9 @@ class GalleryFragment : Fragment() {
 
 
                         //store image url in realTime database
-                        dbRef.push().setValue(uri.toString()).addOnFailureListener {
+                        var uniqueId = dbRef.push().key.toString()
+
+                        dbRef.child(uniqueId).setValue(UrlDataClass(uri.toString(),false)).addOnFailureListener {
                             Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_SHORT).show()
                         }
 
