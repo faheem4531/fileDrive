@@ -8,6 +8,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.example.filedrive.R
 import android.content.Context
+import android.content.Intent
+import com.example.filedrive.ViewFullImage
 
 class ImageAdapter(
     private val context: Context,
@@ -34,6 +36,10 @@ class ImageAdapter(
         // Click listener
         holder.imageView.setOnClickListener {
             // Pass the clicked image URL to the click listener
+            val intent = Intent(context, ViewFullImage::class.java)
+            intent.putExtra("IMAGE_URL", imageUrl)
+            context.startActivity(intent)
+
             imageClickListener.invoke(imageUrl)
         }
 

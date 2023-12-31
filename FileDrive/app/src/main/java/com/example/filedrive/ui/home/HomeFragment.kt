@@ -1,5 +1,6 @@
 package com.example.filedrive.ui.home
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,6 +16,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.filedrive.R
+import com.example.filedrive.Signup
+import com.example.filedrive.ViewFullImage
 import com.example.filedrive.ui.ImageAdapter
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -103,7 +106,6 @@ class HomeFragment : Fragment() {
                     imageLoader.visibility= View.GONE
                     val adapter = ImageAdapter(requireContext(), listImages,
                         { imageUrl ->
-                        Toast.makeText(requireContext(), imageUrl, Toast.LENGTH_SHORT).show()
                     },
                         // Handle long click event here
                         { imageUrl ->
