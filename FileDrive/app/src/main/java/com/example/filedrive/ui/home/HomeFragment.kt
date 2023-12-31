@@ -100,7 +100,16 @@ class HomeFragment : Fragment() {
                         listImages.add(currentImage!!)  // !! means shouldn't be null
                     }
                     imageLoader.visibility= View.GONE
-                    recyclerView.adapter = ImageAdapter (requireContext(), listImages)
+                    imageLoader.visibility= View.GONE
+                    val adapter = ImageAdapter(requireContext(), listImages,
+                        { imageUrl ->
+                        Toast.makeText(requireContext(), imageUrl, Toast.LENGTH_SHORT).show()
+                    },
+                        // Handle long click event here
+                        { imageUrl ->
+                            Toast.makeText(requireContext(), "Long Clicked", Toast.LENGTH_SHORT).show()
+                    })
+                    recyclerView.adapter = adapter
                 }
                 else{
                     imageLoader.visibility= View.GONE

@@ -11,7 +11,9 @@ import android.content.Context
 
 class ImageAdapter(
     private val context: Context,
-    private val listImages: ArrayList<String>
+    private val listImages: ArrayList<String>,
+    private val imageClickListener: (String) -> Unit,
+    private val imageLongClickListener: (String) -> Unit
 ) : RecyclerView.Adapter<ImageAdapter.ViewHolder> () {
 
     class ViewHolder (itemView: View) : RecyclerView.ViewHolder(itemView){
@@ -25,7 +27,22 @@ class ImageAdapter(
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val imageUrl = listImages[position]
+
         Glide.with(context).load(listImages[position]).into(holder.imageView)
+
+        // Click listener
+        holder.imageView.setOnClickListener {
+            // Pass the clicked image URL to the click listener
+            imageClickListener.invoke(imageUrl)
+        }
+
+        // Long click listener
+        holder.imageView.setOnLongClickListener {
+            // Pass the long-clicked image URL to the long click listener
+            imageLongClickListener.invoke(imageUrl)
+            true // Consume the long click event
+        }
     }
 
     override fun getItemCount(): Int {
