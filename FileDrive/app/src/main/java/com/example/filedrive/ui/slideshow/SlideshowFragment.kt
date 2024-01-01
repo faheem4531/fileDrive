@@ -4,17 +4,36 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
+import android.widget.ImageView
+import android.widget.ProgressBar
+import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.filedrive.R
 import com.example.filedrive.databinding.FragmentSlideshowBinding
+import com.example.filedrive.ui.ImageAdapter
+import com.example.filedrive.ui.UrlDataClass
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class SlideshowFragment : Fragment() {
 
-    private var _binding: FragmentSlideshowBinding? = null
+    //storing variables
+    private lateinit var dbRef: DatabaseReference
 
-    // This property is only valid between onCreateView and
-    // onDestroyView.
+    //fetching declaration
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var listImages: ArrayList<UrlDataClass>
+
+
+
+
+    private var _binding: FragmentSlideshowBinding? = null
     private val binding get() = _binding!!
 
     override fun onCreateView(
@@ -22,16 +41,62 @@ class SlideshowFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        val slideshowViewModel =
-            ViewModelProvider(this).get(SlideshowViewModel::class.java)
-
         _binding = FragmentSlideshowBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val textView: TextView = binding.textSlideshow
-        slideshowViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
+
+
+
+
+        //=>  Code Start from here
+        recyclerView= root.findViewById (R.id.recycler)
+        recyclerView.layoutManager = LinearLayoutManager(requireContext())
+        listImages = arrayListOf()
+        var imageLoader = root.findViewById<ProgressBar>(R.id.imageLoader)
+        var noImage = root.findViewById<ImageView> (R.id.noImageFound)
+
+
+
+        // Initialize dbRef after Firebase initialization
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        userId?.let {
+            dbRef = FirebaseDatabase.getInstance().getReference("Users").child(userId)
+                .child("galleryImagesUrl")
         }
+
+
+//        fetching  data
+        dbRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                listImages.clear()
+                if (snapshot.exists()){
+                    noImage.visibility = View.GONE
+                    for (image in snapshot.children){
+                        val urlData  = image.getValue(UrlDataClass::class.java)
+                        if (urlData  != null && urlData.deleteFlag == true) {
+                            listImages.add(urlData!!)
+                        }
+                    }
+
+                    imageLoader.visibility= View.GONE
+                    val adapter = ImageAdapter(requireContext(), listImages, { imageUrl ->
+                    }, {
+                    })
+                    recyclerView.adapter = adapter
+                }
+                else{
+                    imageLoader.visibility= View.GONE
+                    noImage.visibility = View.VISIBLE
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Toast.makeText(requireContext(), error.toString(), Toast.LENGTH_SHORT).show()
+            }
+
+        })
+
+
         return root
     }
 

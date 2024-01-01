@@ -1,5 +1,6 @@
 package com.example.filedrive.ui.gallery
 
+import android.app.AlertDialog
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -103,9 +104,22 @@ class GalleryFragment : Fragment() {
                      { imageUrl ->
                     },
                         // Handle long click event here
-                    { imageUrl ->
-                        Toast.makeText(requireContext(), "Long Clicked: $imageUrl", Toast.LENGTH_SHORT).show()
+                    { imgObj ->
+                        val builder = AlertDialog.Builder(requireContext())
+                        builder.setTitle("Options")
+                            .setItems(arrayOf("Delete", "Download")) { _, which ->
+                                when (which) {
+                                    0 -> confirmDelete(imgObj)
+                                    1 -> downloadImage(imgObj)
+                                }
+                            }
+                            .setNegativeButton("Cancel") { dialog, _ ->
+                                dialog.dismiss()
+                            }
+                        builder.show()
                     })
+
+
                     recyclerView.adapter = adapter
                 }
                 else{
@@ -122,6 +136,45 @@ class GalleryFragment : Fragment() {
 
 
         return root
+    }
+
+    private fun confirmDelete(imageData: UrlDataClass) {
+        val dialogBuilder = AlertDialog.Builder(requireContext())
+        dialogBuilder.setMessage("Are you sure you want to delete this image?")
+            .setCancelable(false)
+            .setPositiveButton("Yes") { _, _ ->
+
+                val userId = FirebaseAuth.getInstance().currentUser?.uid
+                if (userId != null) {
+
+                    dbRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            for (imageSnapshot in snapshot.children) {
+                                val urlData = imageSnapshot.getValue(UrlDataClass::class.java)
+                                if (urlData != null && urlData.url == imageData.url) {
+                                    imageSnapshot.ref.child("deleteFlag").setValue(true)
+                                    Toast.makeText(requireContext(), "image deleted", Toast.LENGTH_SHORT).show()
+                                }
+                            }
+                        }
+                        override fun onCancelled(error: DatabaseError) {
+                            Toast.makeText(requireContext(), error.toString(), Toast.LENGTH_SHORT).show()
+                        }
+                    })
+                }
+            }
+            .setNegativeButton("No") { dialog, _ ->
+                dialog.dismiss()
+            }
+
+        val alert = dialogBuilder.create()
+        alert.setTitle("Confirmation")
+        alert.show()
+    }
+
+    private fun downloadImage(imageUrl: UrlDataClass) {
+        // Implement logic for renaming the image
+        // You can show a dialog or navigate to a screen for renaming the image
     }
 
     private fun uploadImage(imageUri: Uri) {

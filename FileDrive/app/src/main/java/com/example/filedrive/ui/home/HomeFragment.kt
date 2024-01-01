@@ -1,44 +1,30 @@
 package com.example.filedrive.ui.home
 
-import android.app.AlertDialog
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.filedrive.databinding.FragmentHomeBinding
-import android.net.Uri
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.Toast
-import androidx.activity.result.ActivityResultCallback
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.filedrive.R
-import com.example.filedrive.Signup
-import com.example.filedrive.ViewFullImage
 import com.example.filedrive.ui.ImageAdapter
 import com.example.filedrive.ui.UrlDataClass
-import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.firebase.storage.storage
 
 class HomeFragment : Fragment() {
 
     //storing variables
     private lateinit var dbRef: DatabaseReference
-//    private  var dbStorage= Firebase.storage
-//    private lateinit var uploadImage : ImageView
-//    private lateinit var progresGallery : ProgressBar
-
-//    private var uri : Uri?= null
 
     //fetching declaration
     private lateinit var recyclerView: RecyclerView
@@ -60,10 +46,7 @@ class HomeFragment : Fragment() {
 
 
 
-        //=>  Code Starting
-//       val dbStorage = FirebaseStorage.getInstance()
-//        uploadImage  = root.findViewById (R.id.uploadImage)
-//        progresGallery = root.findViewById (R.id.uploadImageProgress)
+        //=>  Code Start from here
 
         recyclerView= root.findViewById (R.id.recycler)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
@@ -81,20 +64,7 @@ class HomeFragment : Fragment() {
         }
 
 
-//        var galleryImage = registerForActivityResult(
-//            ActivityResultContracts.GetContent(),
-//            ActivityResultCallback  {url->
-//                url?.let{
-//                    uri = url
-//                    uploadImage(url)
-//                }
-//            }
-//        )
-//
-//        uploadImage.setOnClickListener{
-//            galleryImage.launch("image/*")
-//        }
-
+//        fetching  data
         dbRef.addValueEventListener(object :ValueEventListener{
             override fun onDataChange(snapshot: DataSnapshot) {
                 listImages.clear()
@@ -108,26 +78,8 @@ class HomeFragment : Fragment() {
                     }
 
                     imageLoader.visibility= View.GONE
-                    val adapter = ImageAdapter(requireContext(), listImages,
-                        { imageUrl ->
-                    },
-                        // Handle long click event here
-                        { imageUrl ->
-
-                            val builder = AlertDialog.Builder(requireContext())
-                            builder.setTitle("Options")
-                                .setItems(arrayOf("Delete", "Rename")) { _, which ->
-                                    when (which) {
-                                        0 -> confirmDelete(imageUrl)
-                                        1 -> downloadImage(imageUrl)
-                                    }
-                                }
-                                .setNegativeButton("Cancel") { dialog, _ ->
-                                    dialog.dismiss()
-                                }
-                            builder.show()
-
-                            Toast.makeText(requireContext(), "Long Clicked", Toast.LENGTH_SHORT).show()
+                    val adapter = ImageAdapter(requireContext(), listImages, { imageUrl ->
+                    }, {
                     })
                     recyclerView.adapter = adapter
                 }
@@ -145,61 +97,6 @@ class HomeFragment : Fragment() {
 
         return root
     }
-
-    private fun confirmDelete(imageUrl: String) {
-        val dialogBuilder = AlertDialog.Builder(requireContext())
-        dialogBuilder.setMessage("Are you sure you want to delete this image?")
-            .setCancelable(false)
-            .setPositiveButton("Yes") { _, _ ->
-
-                Toast.makeText(requireContext(), "kam ho gia ha ", Toast.LENGTH_SHORT).show()
-            }
-            .setNegativeButton("No") { dialog, _ ->
-                dialog.dismiss()
-            }
-
-        val alert = dialogBuilder.create()
-        alert.setTitle("Confirmation")
-        alert.show()
-    }
-
-    private fun downloadImage(imageUrl: String) {
-        // Implement logic for renaming the image
-        // You can show a dialog or navigate to a screen for renaming the image
-    }
-
-//    private fun uploadImage(imageUri: Uri) {
-//
-//        imageUri?.let {
-//            uploadImage.visibility = View.GONE
-//            progresGallery.visibility = View.VISIBLE
-//
-//            var userId = FirebaseAuth.getInstance().currentUser?.uid
-//
-//            dbStorage.getReference("Gallery Images").child(userId.toString())
-//                .child(System.currentTimeMillis().toString())
-//                .putFile(imageUri)
-//                .addOnSuccessListener { task ->
-//                    task.metadata?.reference?.downloadUrl?.addOnSuccessListener { url ->
-//                        uri = url
-//                        Toast.makeText(requireContext(), "upload sucess", Toast.LENGTH_SHORT).show()
-//
-//
-//                        //store image url in realTime database
-//                        dbRef.push().setValue(uri.toString()).addOnFailureListener {
-//                            Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_SHORT).show()
-//                        }
-//
-//                        uploadImage.visibility = View.VISIBLE
-//                        progresGallery.visibility = View.GONE
-//                    }
-//                        ?.addOnFailureListener {
-//                            Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_SHORT)
-//                                .show()
-//                        }
-//                }
-//        }
-//    }
 
     override fun onDestroyView() {
         super.onDestroyView()

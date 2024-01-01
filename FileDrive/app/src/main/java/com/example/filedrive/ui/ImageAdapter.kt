@@ -15,7 +15,7 @@ class ImageAdapter(
     private val context: Context,
     private val listImages: ArrayList<UrlDataClass>,
     private val imageClickListener: (String) -> Unit,
-    private val imageLongClickListener: (String) -> Unit
+    private val imageLongClickListener: (UrlDataClass) -> Unit
 ) : RecyclerView.Adapter<ImageAdapter.ViewHolder> () {
 
     private var selectedItems: HashSet<Int> = HashSet()
@@ -32,8 +32,9 @@ class ImageAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val imageUrl = listImages[position].url.toString()
+        val imgObj = listImages[position]
 
-        Glide.with(context).load(listImages[position].url).into(holder.imageView)
+        Glide.with(context).load(imageUrl).into(holder.imageView)
 
         // Click listener
         holder.imageView.setOnClickListener {
@@ -47,7 +48,7 @@ class ImageAdapter(
 
         // Long click listener
         holder.imageView.setOnLongClickListener {
-            imageLongClickListener.invoke(imageUrl)
+            imageLongClickListener.invoke(imgObj)
             true // Consume the long click event
         }
 
