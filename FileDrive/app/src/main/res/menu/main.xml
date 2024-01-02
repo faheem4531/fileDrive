@@ -2,6 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
+<!--    Home View-->
+    <item
+        android:id="@+id/home_item"
+        android:orderInCategory="100"
+        android:title="Home"
+        app:showAsAction="never"
+        />
 <!--    Settings-->
     <item
         android:id="@+id/action_settings"
