@@ -8,6 +8,10 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.contract.ActivityResultContracts
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.example.filedrive.ui.UrlDataClass
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -47,6 +51,15 @@ class UpdateProfile : AppCompatActivity() {
                 updateName.setText(userName)
                 updateEmail.setText(userEmail)
 
+                val showImage = if (pofileImage.isNullOrEmpty()) {
+                    R.drawable.man
+                } else {
+                    pofileImage
+                }
+                    Glide.with(this@UpdateProfile)
+                        .load(showImage)
+                        .transform(CircleCrop())
+                        .into(updatedImage)
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -54,6 +67,25 @@ class UpdateProfile : AppCompatActivity() {
             }
 
         })
+
+        var galleryImage = registerForActivityResult(
+            ActivityResultContracts.GetContent(),
+            ActivityResultCallback {Url ->
+                Url?.let {
+                    Glide.with(this@UpdateProfile)
+                        .load(Url)
+                        .transform(CircleCrop())
+                        .into(updatedImage)
+
+                    profileUri = Url
+                }
+            }
+        )
+
+
+        updatedImage.setOnClickListener {
+            galleryImage.launch("image/*")
+        }
 
         updateEmail.setOnClickListener{
             updateEmail.error = "error"
@@ -92,7 +124,7 @@ class UpdateProfile : AppCompatActivity() {
                     if (userName != null && userName != updateName_) {
                         dbRef.child("name").setValue(updateName_)
                             .addOnSuccessListener {
-                                Toast.makeText(this@UpdateProfile, "Name Updated", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(this@UpdateProfile, profileUri.toString(), Toast.LENGTH_SHORT).show()
                             }
                             .addOnFailureListener { exception ->
                                 Toast.makeText(this@UpdateProfile, "Failed to update name: ${exception.message}", Toast.LENGTH_SHORT).show()
