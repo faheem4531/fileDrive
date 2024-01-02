@@ -1,5 +1,6 @@
 package com.example.filedrive.ui.slideshow
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -25,6 +26,7 @@ class SlideshowFragment : Fragment() {
 
     //storing variables
     private lateinit var dbRef: DatabaseReference
+    private val userId = FirebaseAuth.getInstance().currentUser?.uid
 
     //fetching declaration
     private lateinit var recyclerView: RecyclerView
@@ -53,12 +55,12 @@ class SlideshowFragment : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         listImages = arrayListOf()
         var imageLoader = root.findViewById<ProgressBar>(R.id.imageLoader)
-        var noImage = root.findViewById<ImageView> (R.id.noImageFound)
+        var noImage = root.findViewById<ImageView> (R.id.noImageFoundBin)
 
 
 
         // Initialize dbRef after Firebase initialization
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
+//        val userId = FirebaseAuth.getInstance().currentUser?.uid
         userId?.let {
             dbRef = FirebaseDatabase.getInstance().getReference("Users").child(userId)
                 .child("galleryImagesUrl")
@@ -79,8 +81,23 @@ class SlideshowFragment : Fragment() {
                     }
 
                     imageLoader.visibility= View.GONE
-                    val adapter = ImageAdapter(requireContext(), listImages, { imageUrl ->
-                    }, {
+                    val adapter = ImageAdapter(requireContext(), listImages, {}, {
+                     imgObj ->
+
+                        val builder = AlertDialog.Builder(requireContext())
+                        builder.setTitle("Options")
+                            .setItems(arrayOf("Delete", "Empty RecycleBin","Restore", "Restore All")) { _, which ->
+                                when (which) {
+                                    0 -> confirmDelete(imgObj)
+                                    1 -> deleteAll(imgObj)
+                                    2 -> restoreImage(imgObj)
+                                    3 -> restoreAllImages(imgObj)
+                                }
+                            }
+                            .setNegativeButton("Cancel") { dialog, _ ->
+                                dialog.dismiss()
+                            }
+                        builder.show()
                     })
                     recyclerView.adapter = adapter
                 }
@@ -90,6 +107,8 @@ class SlideshowFragment : Fragment() {
                 }
             }
 
+
+
             override fun onCancelled(error: DatabaseError) {
                 Toast.makeText(requireContext(), error.toString(), Toast.LENGTH_SHORT).show()
             }
@@ -98,6 +117,84 @@ class SlideshowFragment : Fragment() {
 
 
         return root
+    }
+
+
+    private fun confirmDelete(imageData: UrlDataClass) {
+        val dialogBuilder = AlertDialog.Builder(requireContext())
+        dialogBuilder.setMessage("Are you sure you want to delete this image?")
+            .setCancelable(false)
+            .setPositiveButton("Yes") { _, _ ->
+
+                dbRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        for (imageSnapshot in snapshot.children) {
+                            val urlData = imageSnapshot.getValue(UrlDataClass::class.java)
+                            if (urlData != null && urlData.url == imageData.url && urlData.deleteFlag == true) {
+                                imageSnapshot.ref.removeValue()
+                                    .addOnSuccessListener {
+                                        Toast.makeText(
+                                            requireContext(),
+                                            "Image deleted successfully",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                    .addOnFailureListener { e ->
+                                        Toast.makeText(
+                                            requireContext(),
+                                            "Failed to delete image: ${e.message}",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
+                                return
+//                                break
+                            }
+                        }
+                    }
+                    override fun onCancelled(error: DatabaseError) {
+                        Toast.makeText(requireContext(), error.toString(), Toast.LENGTH_SHORT).show()
+                    }
+                })
+
+            }
+            .setNegativeButton("No") { dialog, _ ->
+                dialog.dismiss()
+            }
+
+        val alert = dialogBuilder.create()
+        alert.setTitle("Confirmation")
+        alert.show()
+    }
+
+    private fun deleteAll(imageUrl: UrlDataClass) {
+        // Implement logic for renaming the image
+        // You can show a dialog or navigate to a screen for renaming the image
+    }
+
+    private fun restoreImage(imageData: UrlDataClass) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        if (userId != null) {
+
+            dbRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (imageSnapshot in snapshot.children) {
+                        val urlData = imageSnapshot.getValue(UrlDataClass::class.java)
+                        if (urlData != null && urlData.url == imageData.url) {
+                            imageSnapshot.ref.child("deleteFlag").setValue(false)
+                            Toast.makeText(requireContext(), "image deleted", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    return
+                }
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(requireContext(), error.toString(), Toast.LENGTH_SHORT).show()
+                }
+            })
+        }
+    }
+
+    private fun restoreAllImages(imgObj: UrlDataClass) {
+
     }
 
     override fun onDestroyView() {

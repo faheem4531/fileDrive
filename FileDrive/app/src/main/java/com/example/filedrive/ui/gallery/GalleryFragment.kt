@@ -1,8 +1,11 @@
 package com.example.filedrive.ui.gallery
 
 import android.app.AlertDialog
+import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -26,6 +29,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.storage
 import androidx.activity.result.ActivityResultCallback
 import com.example.filedrive.ui.UrlDataClass
+import java.io.File
 
 class GalleryFragment : Fragment() {
 
@@ -101,8 +105,7 @@ class GalleryFragment : Fragment() {
                     imageLoader.visibility= View.GONE
                     val adapter = ImageAdapter(requireContext(), listImages,
                         // Handle click event here
-                     { imageUrl ->
-                    },
+                     {},
                         // Handle long click event here
                     { imgObj ->
                         val builder = AlertDialog.Builder(requireContext())
@@ -156,6 +159,7 @@ class GalleryFragment : Fragment() {
                                     Toast.makeText(requireContext(), "image deleted", Toast.LENGTH_SHORT).show()
                                 }
                             }
+                            return
                         }
                         override fun onCancelled(error: DatabaseError) {
                             Toast.makeText(requireContext(), error.toString(), Toast.LENGTH_SHORT).show()
@@ -173,13 +177,62 @@ class GalleryFragment : Fragment() {
     }
 
     private fun downloadImage(imageUrl: UrlDataClass) {
-        // Implement logic for renaming the image
-        // You can show a dialog or navigate to a screen for renaming the image
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        val imageUrl = imageUrl.url // Assuming this is the URL of the file in Firebase Storage
+
+        // Extract the filename from the URL (assuming the filename is after the last '/')
+        val imageName = imageUrl?.substringAfterLast('F') // Extracts the filename from the URL
+
+        // Remove URL parameters if present (e.g., ?alt=media&token=...)
+        val cleanImageName = imageName?.substringBefore('?')
+//        val cleanImageName = "1704062382957"
+
+
+        // Construct the reference to the file in Firebase Storage
+        val storageRef = Firebase.storage.reference
+            .child("Gallery Images")
+            .child(userId.toString())
+            .child(cleanImageName.toString())
+
+        val directoryName = "fileDriveImages"
+        val directory = File(requireContext().getExternalFilesDir(null), directoryName)
+        directory.mkdirs()
+
+
+        val localFile = File(directory, "downloaded_image.jpg")
+
+        storageRef.getFile(localFile)
+            .addOnSuccessListener {
+                // Image downloaded successfully
+                Toast.makeText(requireContext(), "Image downloaded", Toast.LENGTH_SHORT).show()
+                // Perform actions with the downloaded image (e.g., display or save it)
+
+                MediaStore.Images.Media.insertImage(
+                    requireContext().contentResolver,
+                    localFile.absolutePath,
+                    cleanImageName,
+                    "Image Description"
+                )
+
+                // Trigger media scanner to scan the newly added image
+                MediaScannerConnection.scanFile(
+                    requireContext(),
+                    arrayOf(localFile.absolutePath),
+                    arrayOf("image/jpeg"),
+                    null
+                )
+
+            }
+            .addOnFailureListener { exception ->
+                // Handle any errors that occurred during the download process
+                Toast.makeText(requireContext(), cleanImageName.toString(), Toast.LENGTH_SHORT).show()
+//                Log.e("DownloadError", "Failed to download image: ${exception.message}")
+            }
     }
 
     private fun uploadImage(imageUri: Uri) {
 
-        imageUri?.let {
+//        imageUri?.let {
             uploadImage.visibility = View.GONE
             progresGallery.visibility = View.VISIBLE
 
@@ -191,25 +244,27 @@ class GalleryFragment : Fragment() {
                 .addOnSuccessListener { task ->
                     task.metadata?.reference?.downloadUrl?.addOnSuccessListener { url ->
                         uri = url
-                        Toast.makeText(requireContext(), "upload sucess", Toast.LENGTH_SHORT).show()
-
 
                         //store image url in realTime database
                         var uniqueId = dbRef.push().key.toString()
 
-                        dbRef.child(uniqueId).setValue(UrlDataClass(uri.toString(),false)).addOnFailureListener {
+                        dbRef.child(uniqueId).setValue(UrlDataClass(uri.toString(),false))
+                            .addOnSuccessListener {
+                                Toast.makeText(requireContext(), "upload successfully", Toast.LENGTH_SHORT).show()
+                            }.addOnFailureListener {
                             Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_SHORT).show()
                         }
 
                         uploadImage.visibility = View.VISIBLE
                         progresGallery.visibility = View.GONE
+//                        return@addOnSuccessListener
                     }
                         ?.addOnFailureListener {
                             Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_SHORT)
                                 .show()
                         }
                 }
-        }
+//        }
     }
 
 
