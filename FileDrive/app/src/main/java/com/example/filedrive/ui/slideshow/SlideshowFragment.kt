@@ -62,7 +62,6 @@ class SlideshowFragment : Fragment() {
 
 
         // Initialize dbRef after Firebase initialization
-//        val userId = FirebaseAuth.getInstance().currentUser?.uid
         userId?.let {
             dbRef = FirebaseDatabase.getInstance().getReference("Users").child(userId)
                 .child("galleryImagesUrl")
@@ -83,7 +82,7 @@ class SlideshowFragment : Fragment() {
                     }
 
                     imageLoader.visibility= View.GONE
-                    val adapter = ImageAdapter(requireContext(), listImages, {}, {
+                    val adapter = ImageAdapter(requireActivity(), listImages, {}, {
                      imgObj ->
 
                         val builder = AlertDialog.Builder(requireContext())
@@ -198,7 +197,7 @@ class SlideshowFragment : Fragment() {
                         val urlData = imageSnapshot.getValue(UrlDataClass::class.java)
                         if (urlData != null && urlData.url == imageData.url) {
                             imageSnapshot.ref.child("deleteFlag").setValue(false)
-                            Toast.makeText(requireContext(), "image deleted", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(requireContext(), "Image restored", Toast.LENGTH_SHORT).show()
                         }
                     }
                     return

@@ -16,21 +16,28 @@
         android:orientation="vertical"
         android:gravity="center">
 
+        <LinearLayout
+            android:layout_width="180dp"
+            android:layout_height="180dp"
+            android:background="@drawable/rounded_bg"
+            android:gravity="center">
+
         <ImageView
             android:id="@+id/updateProfileImage"
-            android:layout_width="170dp"
-            android:layout_height="170dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
             android:src="@drawable/man"
             android:background="@drawable/rounded_bg"
-            android:padding="20dp"
+            android:padding="10dp"
             />
+        </LinearLayout>
 
         <EditText
             android:id="@+id/updateName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="35dp"
-            android:text="Mushab faheem"
+            android:text=""
             android:textSize="20dp"
             android:textColor="@color/TextRed"
             android:textStyle="bold"
@@ -41,7 +48,7 @@
             android:layout_marginTop="15dp"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Faheem@gmail.com"
+            android:text=""
             android:textSize="20dp"
             android:focusable="false"
             android:clickable="false"

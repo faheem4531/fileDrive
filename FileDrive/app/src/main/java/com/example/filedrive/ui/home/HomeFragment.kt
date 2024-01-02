@@ -78,7 +78,7 @@ class HomeFragment : Fragment() {
                     }
 
                     imageLoader.visibility= View.GONE
-                    val adapter = ImageAdapter(requireContext(), listImages, { imageUrl ->
+                    val adapter = ImageAdapter(requireActivity(), listImages, { imageUrl ->
                     }, {
                     })
                     recyclerView.adapter = adapter

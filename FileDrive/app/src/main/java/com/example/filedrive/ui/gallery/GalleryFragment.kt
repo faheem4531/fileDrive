@@ -103,7 +103,7 @@ class GalleryFragment : Fragment() {
                         }
                     }
                     imageLoader.visibility= View.GONE
-                    val adapter = ImageAdapter(requireContext(), listImages,
+                    val adapter = ImageAdapter(requireActivity(), listImages,
                         // Handle click event here
                      {},
                         // Handle long click event here
