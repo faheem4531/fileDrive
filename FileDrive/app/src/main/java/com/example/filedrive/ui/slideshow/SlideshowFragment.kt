@@ -15,12 +15,14 @@ import com.example.filedrive.R
 import com.example.filedrive.databinding.FragmentSlideshowBinding
 import com.example.filedrive.ui.ImageAdapter
 import com.example.filedrive.ui.UrlDataClass
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.storage
 
 class SlideshowFragment : Fragment() {
 
@@ -126,35 +128,50 @@ class SlideshowFragment : Fragment() {
             .setCancelable(false)
             .setPositiveButton("Yes") { _, _ ->
 
-                dbRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        for (imageSnapshot in snapshot.children) {
-                            val urlData = imageSnapshot.getValue(UrlDataClass::class.java)
-                            if (urlData != null && urlData.url == imageData.url && urlData.deleteFlag == true) {
-                                imageSnapshot.ref.removeValue()
-                                    .addOnSuccessListener {
-                                        Toast.makeText(
-                                            requireContext(),
-                                            "Image deleted successfully",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                    .addOnFailureListener { e ->
-                                        Toast.makeText(
-                                            requireContext(),
-                                            "Failed to delete image: ${e.message}",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                return
+                val imageUrl = imageData.url
+
+                val imageName = imageUrl?.substringAfterLast('F')
+                val cleanImageName = imageName?.substringBefore('?')
+
+
+                val storageRef = Firebase.storage.reference
+                    .child("Gallery Images")
+                    .child(userId.toString())
+                    .child(cleanImageName.toString())
+
+                storageRef.delete().addOnSuccessListener {
+
+                    dbRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            for (imageSnapshot in snapshot.children) {
+                                val urlData = imageSnapshot.getValue(UrlDataClass::class.java)
+                                if (urlData != null && urlData.url == imageData.url && urlData.deleteFlag == true) {
+                                    imageSnapshot.ref.removeValue()
+                                        .addOnSuccessListener {
+                                            Toast.makeText(
+                                                requireContext(),
+                                                "Image deleted successfully",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                        .addOnFailureListener { e ->
+                                            Toast.makeText(
+                                                requireContext(),
+                                                "Failed to delete image: ${e.message}",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+                                    return
 //                                break
+                                }
                             }
                         }
-                    }
-                    override fun onCancelled(error: DatabaseError) {
-                        Toast.makeText(requireContext(), error.toString(), Toast.LENGTH_SHORT).show()
-                    }
-                })
+                        override fun onCancelled(error: DatabaseError) {
+                            Toast.makeText(requireContext(), error.toString(), Toast.LENGTH_SHORT).show()
+                        }
+                    })
+
+                }
 
             }
             .setNegativeButton("No") { dialog, _ ->
