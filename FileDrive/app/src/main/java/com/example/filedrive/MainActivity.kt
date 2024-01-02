@@ -153,6 +153,10 @@ class MainActivity : AppCompatActivity() {
                 finish()
                 true
             }
+            R.id.updateProfile -> {
+                startActivity(Intent(this,UpdateProfile::class.java))
+                true
+            }
         }
 
         return super.onOptionsItemSelected(item)
