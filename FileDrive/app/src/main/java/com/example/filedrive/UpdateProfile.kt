@@ -13,14 +13,18 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.example.filedrive.ui.UrlDataClass
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.storage
+
 class UpdateProfile : AppCompatActivity() {
 
     private var profileUri : Uri? = null
+    private  var dbStorage = Firebase.storage
 
 
 
@@ -103,6 +107,8 @@ class UpdateProfile : AppCompatActivity() {
         }
     }
 
+
+
     private fun updateData() {
         var updateName = findViewById<EditText>(R.id.updateName)
         var updateName_ = updateName.text.toString()
@@ -117,24 +123,42 @@ class UpdateProfile : AppCompatActivity() {
         userId?.let { uid ->
             val dbRef = FirebaseDatabase.getInstance().getReference("Users").child(uid)
 
-            dbRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    if (snapshot.exists()) {
-                    val userName = snapshot.child("name").getValue(String::class.java)
-                    if (userName != null && userName != updateName_) {
-                        dbRef.child("name").setValue(updateName_)
-                            .addOnSuccessListener {
-                                Toast.makeText(this@UpdateProfile, profileUri.toString(), Toast.LENGTH_SHORT).show()
+            profileUri?.let {
+                dbStorage.getReference("Profile Images").child(System.currentTimeMillis().toString())
+                    .putFile(it)
+                    .addOnSuccessListener {task ->
+                        task.metadata?.reference?.downloadUrl
+                            ?.addOnSuccessListener { downloadUri ->
+                                profileUri = downloadUri
+
+                                dbRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                                    override fun onDataChange(snapshot: DataSnapshot) {
+                                        if (snapshot.exists()) {
+                                            val userName = snapshot.child("name").getValue(String::class.java)
+
+                                            dbRef.child("imageUrl").setValue(downloadUri.toString())
+                                            if (userName != null && userName != updateName_) {
+                                                dbRef.child("name").setValue(updateName_)
+                                                    .addOnSuccessListener {
+                                                        Toast.makeText(this@UpdateProfile, "X : "+ downloadUri, Toast.LENGTH_SHORT).show()
+                                                    }
+                                                    .addOnFailureListener { exception ->
+                                                        Toast.makeText(this@UpdateProfile, "Failed to update name: ${exception.message}", Toast.LENGTH_SHORT).show()
+                                                    }
+                                            }}
+                                    }
+                                    override fun onCancelled(error: DatabaseError) {
+                                        Toast.makeText(this@UpdateProfile, error.toString(), Toast.LENGTH_SHORT).show()
+                                    }
+                                })
+
                             }
-                            .addOnFailureListener { exception ->
-                                Toast.makeText(this@UpdateProfile, "Failed to update name: ${exception.message}", Toast.LENGTH_SHORT).show()
-                            }
-                    }}
-                }
-                override fun onCancelled(error: DatabaseError) {
-                    Toast.makeText(this@UpdateProfile, error.toString(), Toast.LENGTH_SHORT).show()
-                }
-            })
+                    }
+            }
+
+
+
+
         }
     }
 }
