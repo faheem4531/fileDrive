@@ -177,15 +177,16 @@ class GalleryFragment : Fragment() {
     }
 
     private fun downloadImage(imageUrl: UrlDataClass) {
+//        imege url be like in the format of
+//        https://firebasestorage.googleapis.com/v0/b/filedrive-e5770.appspot.com/o/Gallery%20Images%2FopssM3K3xrQ3vUffvSJr5I04sdk2%2
+//        F1704059319563?
+//        alt=media&token=15e57842-1a15-4bd8-a9e4-0d8f5dacaf9b
+
         val userId = FirebaseAuth.getInstance().currentUser?.uid
-        val imageUrl = imageUrl.url // Assuming this is the URL of the file in Firebase Storage
+        val imageUrl = imageUrl.url
 
-        // Extract the filename from the URL (assuming the filename is after the last '/')
-        val imageName = imageUrl?.substringAfterLast('F') // Extracts the filename from the URL
-
-        // Remove URL parameters if present (e.g., ?alt=media&token=...)
+        val imageName = imageUrl?.substringAfterLast('F')
         val cleanImageName = imageName?.substringBefore('?')
-//        val cleanImageName = "1704062382957"
 
 
         // Construct the reference to the file in Firebase Storage
@@ -197,15 +198,18 @@ class GalleryFragment : Fragment() {
         val directoryName = "fileDriveImages"
         val directory = File(requireContext().getExternalFilesDir(null), directoryName)
         directory.mkdirs()
-
-
         val localFile = File(directory, "downloaded_image.jpg")
+
+        //recode defected code
+//        val directoryPath = "/fileDrive/Images"
+//        val directory = File(Environment.getExternalStorageDirectory() ,directoryPath )
+//        directory.mkdirs()
+//        val localFile = File(directory, "downloaded_image.jpg")
+
 
         storageRef.getFile(localFile)
             .addOnSuccessListener {
-                // Image downloaded successfully
                 Toast.makeText(requireContext(), "Image downloaded", Toast.LENGTH_SHORT).show()
-                // Perform actions with the downloaded image (e.g., display or save it)
 
                 MediaStore.Images.Media.insertImage(
                     requireContext().contentResolver,
@@ -224,11 +228,10 @@ class GalleryFragment : Fragment() {
 
             }
             .addOnFailureListener { exception ->
-                // Handle any errors that occurred during the download process
-                Toast.makeText(requireContext(), cleanImageName.toString(), Toast.LENGTH_SHORT).show()
-//                Log.e("DownloadError", "Failed to download image: ${exception.message}")
+                Toast.makeText(requireContext(), cleanImageName.toString()+"    " + exception.message, Toast.LENGTH_SHORT).show()
             }
     }
+
 
     private fun uploadImage(imageUri: Uri) {
 
