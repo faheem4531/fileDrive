@@ -9,6 +9,7 @@ import com.example.filedrive.databinding.FragmentHomeBinding
 import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.filedrive.R
@@ -83,6 +84,9 @@ class HomeFragment : Fragment() {
                     val adapter = ImageAdapter(requireActivity().applicationContext, listImages, { imageUrl ->
                     }, {
                     })
+
+
+                    recyclerView.layoutManager = GridLayoutManager(requireContext(), 3)
                     recyclerView.adapter = adapter
                 }
                 else{

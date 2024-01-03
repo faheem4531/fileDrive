@@ -28,6 +28,8 @@ import com.google.firebase.database.ValueEventListener
 
 class MainActivity : AppCompatActivity() {
 
+    private var dbRefListener: ValueEventListener? = null
+
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
     private lateinit var currentUser: FirebaseUser
@@ -45,8 +47,6 @@ class MainActivity : AppCompatActivity() {
         val drawerLayout: DrawerLayout = binding.drawerLayout
         val navView: NavigationView = binding.navView
         val navController = findNavController(R.id.nav_host_fragment_content_main)
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
             setOf(
                 R.id.nav_home, R.id.nav_gallery, R.id.nav_slideshow
@@ -57,11 +57,12 @@ class MainActivity : AppCompatActivity() {
 
 
 
-//started code from here
+        //started code from here
         var auth: FirebaseAuth=FirebaseAuth.getInstance()
 
         //function call to get username and email to show on header
-        displayUserInfo(auth)
+         displayUserInfo(auth)
+
 
         navView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
@@ -89,7 +90,7 @@ class MainActivity : AppCompatActivity() {
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         val dbRef = FirebaseDatabase.getInstance().getReference("Users").child(userId.toString())
 
-        dbRef.addValueEventListener(object : ValueEventListener {
+        dbRefListener = dbRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 if (snapshot.exists()) {
                     val dbName = snapshot.child("name").getValue(String::class.java)
@@ -101,23 +102,21 @@ class MainActivity : AppCompatActivity() {
                     val userEmailTextView: TextView = headerView.findViewById(R.id.userEmail)
                     val displayImage : ImageView = headerView.findViewById(R.id.imageView)
 
+                    displayImage.setOnClickListener{
+                        startActivity(Intent(this@MainActivity,UpdateProfile::class.java))
+                    }
+
                     userNameTextView.text = dbName
                     userEmailTextView.text = dbEmail
 
                     if (dbImage != null) {
-                        Glide.with(this@MainActivity) // Use your activity reference
+                        Glide.with(this@MainActivity.applicationContext)
                             .load(dbImage)
-                            .transform(CircleCrop()) // Apply circular transformation
+                            .placeholder(R.drawable.man)
+                            .transform(CircleCrop())
                             .into(displayImage)
+                            .waitForLayout()
                     }
-                    //                    else{
-                    //                        var dumyImage= "https://firebasestorage.googleapis.com/v0/b/nav-manu-app.appspot.com/o/Profile%20Images%2F1702379430996?alt=media&token=4b126353-1d61-4856-adca-9761736e011a"
-                    //                        Glide.with(this@NavigationViewActivity)
-                    //                            .load(dumyImage)
-                    //                            .transform(CircleCrop())
-                    //                            .into(displayImage)
-                    //
-                    //                    }
                 }
             }
 
@@ -170,4 +169,13 @@ class MainActivity : AppCompatActivity() {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+
+//        dbRefListener?.let {
+//            dbRef.removeEventListener(it)
+//        }
+    }
+
 }

@@ -9,6 +9,7 @@ import android.widget.ImageView
 import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.filedrive.R
@@ -102,6 +103,8 @@ class SlideshowFragment : Fragment() {
                             }
                         builder.show()
                     })
+
+                    recyclerView.layoutManager = GridLayoutManager(requireContext(), 3)
                     recyclerView.adapter = adapter
                 }
                 else{

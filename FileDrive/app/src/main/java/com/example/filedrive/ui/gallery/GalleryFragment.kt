@@ -29,6 +29,7 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.storage
 import androidx.activity.result.ActivityResultCallback
+import androidx.recyclerview.widget.GridLayoutManager
 import com.example.filedrive.ui.UrlDataClass
 import java.io.File
 
@@ -66,7 +67,6 @@ class GalleryFragment : Fragment() {
         progresGallery = root.findViewById (R.id.uploadImageProgress)
         //=>  Code Starting
         recyclerView= root.findViewById (R.id.recycler)
-        recyclerView.layoutManager = LinearLayoutManager(requireContext())
         listImages = arrayListOf()
         var imageLoader = root.findViewById<ProgressBar>(R.id.imageLoader)
         var noImage = root.findViewById<ImageView> (R.id.noImageFound)
@@ -125,7 +125,7 @@ class GalleryFragment : Fragment() {
                         builder.show()
                     })
 
-
+                    recyclerView.layoutManager = GridLayoutManager(requireContext(), 3)
                     recyclerView.adapter = adapter
                 }
                 else{
