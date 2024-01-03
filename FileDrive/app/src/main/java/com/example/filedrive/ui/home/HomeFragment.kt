@@ -54,8 +54,8 @@ class HomeFragment : Fragment() {
         recyclerView= root.findViewById (R.id.recycler)
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         listImages = arrayListOf()
-        var imageLoader = root.findViewById<ProgressBar>(R.id.imageLoader)
-        var noImage = root.findViewById<ImageView> (R.id.noImageFound)
+        var imageLoader = root.findViewById<ProgressBar>(R.id.imageLoaderH)
+        var noImage = root.findViewById<ImageView> (R.id.noImageFoundH)
 
 
 

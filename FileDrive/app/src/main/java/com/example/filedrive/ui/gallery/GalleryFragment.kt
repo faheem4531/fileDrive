@@ -180,7 +180,7 @@ class GalleryFragment : Fragment() {
     }
 
     private fun downloadImage(imageUrl: UrlDataClass) {
-//        imege url be like in the format of
+//        image url be like in the format of
 //        https://firebasestorage.googleapis.com/v0/b/filedrive-e5770.appspot.com/o/Gallery%20Images%2FopssM3K3xrQ3vUffvSJr5I04sdk2%2
 //        F1704059319563?
 //        alt=media&token=15e57842-1a15-4bd8-a9e4-0d8f5dacaf9b

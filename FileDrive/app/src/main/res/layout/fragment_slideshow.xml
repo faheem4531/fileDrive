@@ -29,8 +29,8 @@
             />
         <ImageView
             android:id="@+id/noImageFoundBin"
-            android:layout_width="110dp"
-            android:layout_height="120dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
             android:layout_gravity="center"
             android:src="@drawable/baseline_delete_24"
             android:visibility="gone"/>
