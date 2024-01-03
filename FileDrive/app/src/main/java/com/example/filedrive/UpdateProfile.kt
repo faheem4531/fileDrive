@@ -1,10 +1,10 @@
 package com.example.filedrive
 
+import android.content.Intent
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
-import android.os.Looper
 import android.view.Gravity
 import android.widget.Button
 import android.widget.EditText
@@ -14,8 +14,6 @@ import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
-import com.bumptech.glide.request.RequestOptions
-import com.example.filedrive.ui.UrlDataClass
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -47,6 +45,11 @@ class UpdateProfile : AppCompatActivity() {
         var updateName = findViewById<EditText>(R.id.updateName)
         var updateEmail = findViewById<EditText>(R.id.updateEmail)
         var saveBtn = findViewById<Button>(R.id.updateProfileBtn)
+        var back = findViewById<ImageView> (R.id.updateProfileBack)
+
+        back.setOnClickListener{
+            startActivity(Intent(this@UpdateProfile,MainActivity::class.java))
+        }
 
         dbRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -54,7 +57,6 @@ class UpdateProfile : AppCompatActivity() {
                 val userEmail = snapshot.child("email").getValue(String::class.java)
                 val pofileImage = snapshot.child("imageUrl").getValue(String::class.java)
 
-//                profileUri = Uri.parse(pofileImage)
                 updateName.setText(userName)
                 updateEmail.setText(userEmail)
 
@@ -108,20 +110,18 @@ class UpdateProfile : AppCompatActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-    }
 
     private fun updateData() {
         var updateName = findViewById<EditText>(R.id.updateName)
         var updateNameS = updateName.text.toString()
+        var saveBtn = findViewById<Button>(R.id.updateProfileBtn)
 
-//        if(updateNameS.isEmpty())
-//        {
-//            updateName.error = "Enter your name"
-//            updateName.requestFocus()
-//            return
-//        }
+        if(updateNameS.isEmpty())
+        {
+            updateName.setError("Enter your name")
+            updateName.requestFocus()
+            return
+        }
 
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         userId?.let { uid ->
@@ -158,8 +158,20 @@ class UpdateProfile : AppCompatActivity() {
                         if (profileUri !=  null)
                             profileFlag = true
 
-                    if(nameFlag || profileFlag)
-                        Toast.makeText(this@UpdateProfile, "Profile Updated", Toast.LENGTH_LONG).show()
+
+                    if (nameFlag || profileFlag) {
+                        saveBtn.text = "..."
+                        val delayMillis: Long = 3000
+                        val handler = Handler()
+
+                        handler.postDelayed({
+                            Toast.makeText(this@UpdateProfile, "Profile Updated", Toast.LENGTH_LONG).show()
+                            saveBtn.postDelayed({
+                                saveBtn.text = "SAVE"
+                            }, 100)
+                        }, delayMillis)
+                    }
+
 
                 }
                 override fun onCancelled(error: DatabaseError) {
