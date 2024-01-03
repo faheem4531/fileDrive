@@ -26,6 +26,8 @@ import com.google.firebase.storage.storage
 
 class SlideshowFragment : Fragment() {
 
+    private var dbRefListener: ValueEventListener? = null
+
     //storing variables
     private lateinit var dbRef: DatabaseReference
     private val userId = FirebaseAuth.getInstance().currentUser?.uid
@@ -69,7 +71,7 @@ class SlideshowFragment : Fragment() {
 
 
 //        fetching  data
-        dbRef.addValueEventListener(object : ValueEventListener {
+        dbRefListener = dbRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 listImages.clear()
                 if (snapshot.exists()){
@@ -115,7 +117,6 @@ class SlideshowFragment : Fragment() {
             }
 
         })
-
 
         return root
     }
@@ -216,5 +217,9 @@ class SlideshowFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+
+        dbRefListener?.let {
+            dbRef.removeEventListener(it)
+        }
     }
 }

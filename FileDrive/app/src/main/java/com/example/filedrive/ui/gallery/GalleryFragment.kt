@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -32,6 +33,8 @@ import com.example.filedrive.ui.UrlDataClass
 import java.io.File
 
 class GalleryFragment : Fragment() {
+
+    private var dbRefListener: ValueEventListener? = null
 
     //storing variables
     private  var dbStorage= Firebase.storage
@@ -91,7 +94,7 @@ class GalleryFragment : Fragment() {
         }
 
 
-        dbRef.addValueEventListener(object :ValueEventListener{
+        dbRefListener = dbRef.addValueEventListener(object :ValueEventListener{
             override fun onDataChange(snapshot: DataSnapshot) {
                 listImages.clear()
                 if (snapshot.exists()){
@@ -103,7 +106,7 @@ class GalleryFragment : Fragment() {
                         }
                     }
                     imageLoader.visibility= View.GONE
-                    val adapter = ImageAdapter(requireActivity(), listImages,
+                    val adapter = ImageAdapter(requireActivity().applicationContext, listImages,
                         // Handle click event here
                      {},
                         // Handle long click event here
@@ -232,7 +235,6 @@ class GalleryFragment : Fragment() {
             }
     }
 
-
     private fun uploadImage(imageUri: Uri) {
 
 //        imageUri?.let {
@@ -274,5 +276,8 @@ class GalleryFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        dbRefListener?.let {
+            dbRef.removeEventListener(it)
+        }
     }
 }

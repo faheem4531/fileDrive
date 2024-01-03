@@ -23,6 +23,8 @@ import com.google.firebase.database.ValueEventListener
 
 class HomeFragment : Fragment() {
 
+    private var dbRefListener: ValueEventListener? = null
+
     //storing variables
     private lateinit var dbRef: DatabaseReference
 
@@ -65,7 +67,7 @@ class HomeFragment : Fragment() {
 
 
 //        fetching  data
-        dbRef.addValueEventListener(object :ValueEventListener{
+        dbRefListener = dbRef.addValueEventListener(object :ValueEventListener{
             override fun onDataChange(snapshot: DataSnapshot) {
                 listImages.clear()
                 if (snapshot.exists()){
@@ -78,7 +80,7 @@ class HomeFragment : Fragment() {
                     }
 
                     imageLoader.visibility= View.GONE
-                    val adapter = ImageAdapter(requireActivity(), listImages, { imageUrl ->
+                    val adapter = ImageAdapter(requireActivity().applicationContext, listImages, { imageUrl ->
                     }, {
                     })
                     recyclerView.adapter = adapter
@@ -101,5 +103,9 @@ class HomeFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+
+        dbRefListener?.let {
+            dbRef.removeEventListener(it)
+        }
     }
 }

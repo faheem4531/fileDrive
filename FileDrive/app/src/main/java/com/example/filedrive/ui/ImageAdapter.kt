@@ -36,8 +36,11 @@ class ImageAdapter(
 
         Glide.with(context).load(imageUrl).into(holder.imageView)
 
+        holder.itemView.isActivated = selectedItems.contains(position)
+
         // Click listener
         holder.imageView.setOnClickListener {
+            toggleSelection(position)
 
             val intent = Intent(context, ViewFullImage::class.java)
             intent.putExtra("IMAGE_URL", imageUrl)
@@ -48,11 +51,12 @@ class ImageAdapter(
 
         // Long click listener
         holder.imageView.setOnLongClickListener {
+            toggleSelection(position)
+
             imageLongClickListener.invoke(imgObj)
             true // Consume the long click event
         }
 
-        holder.itemView.isActivated = selectedItems.contains(position)
     }
 
     override fun getItemCount(): Int {
