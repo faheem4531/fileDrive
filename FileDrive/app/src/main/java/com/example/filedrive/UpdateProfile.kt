@@ -3,6 +3,8 @@ package com.example.filedrive
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.Gravity
 import android.widget.Button
 import android.widget.EditText
@@ -12,6 +14,7 @@ import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
+import com.bumptech.glide.request.RequestOptions
 import com.example.filedrive.ui.UrlDataClass
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -51,19 +54,16 @@ class UpdateProfile : AppCompatActivity() {
                 val userEmail = snapshot.child("email").getValue(String::class.java)
                 val pofileImage = snapshot.child("imageUrl").getValue(String::class.java)
 
-                profileUri = Uri.parse(pofileImage)
+//                profileUri = Uri.parse(pofileImage)
                 updateName.setText(userName)
                 updateEmail.setText(userEmail)
 
-                val showImage = if (pofileImage.isNullOrEmpty()) {
-                    R.drawable.man
-                } else {
-                    pofileImage
-                }
-                    Glide.with(this@UpdateProfile)
-                        .load(showImage)
+                    Glide.with(this@UpdateProfile.applicationContext)
+                        .load(pofileImage)
+                        .placeholder(R.drawable.man)
                         .transform(CircleCrop())
                         .into(updatedImage)
+                        .waitForLayout()
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -80,6 +80,7 @@ class UpdateProfile : AppCompatActivity() {
                         .load(Url)
                         .transform(CircleCrop())
                         .into(updatedImage)
+                        .waitForLayout()
 
                     profileUri = Url
                 }
@@ -107,21 +108,26 @@ class UpdateProfile : AppCompatActivity() {
         }
     }
 
-
+    override fun onResume() {
+        super.onResume()
+    }
 
     private fun updateData() {
         var updateName = findViewById<EditText>(R.id.updateName)
-        var updateName_ = updateName.text.toString()
-        if(updateName_.isEmpty())
-        {
-            updateName.error = "Enter your name"
-            updateName.requestFocus()
-            return
-        }
+        var updateNameS = updateName.text.toString()
+
+//        if(updateNameS.isEmpty())
+//        {
+//            updateName.error = "Enter your name"
+//            updateName.requestFocus()
+//            return
+//        }
 
         val userId = FirebaseAuth.getInstance().currentUser?.uid
         userId?.let { uid ->
             val dbRef = FirebaseDatabase.getInstance().getReference("Users").child(uid)
+            var nameFlag = false
+            var profileFlag = false
 
             profileUri?.let {
                 dbStorage.getReference("Profile Images").child(System.currentTimeMillis().toString())
@@ -131,34 +137,38 @@ class UpdateProfile : AppCompatActivity() {
                             ?.addOnSuccessListener { downloadUri ->
                                 profileUri = downloadUri
 
-                                dbRef.addListenerForSingleValueEvent(object : ValueEventListener {
-                                    override fun onDataChange(snapshot: DataSnapshot) {
-                                        if (snapshot.exists()) {
-                                            val userName = snapshot.child("name").getValue(String::class.java)
-
-                                            dbRef.child("imageUrl").setValue(downloadUri.toString())
-                                            if (userName != null && userName != updateName_) {
-                                                dbRef.child("name").setValue(updateName_)
-                                                    .addOnSuccessListener {
-                                                        Toast.makeText(this@UpdateProfile, "X : "+ downloadUri, Toast.LENGTH_SHORT).show()
-                                                    }
-                                                    .addOnFailureListener { exception ->
-                                                        Toast.makeText(this@UpdateProfile, "Failed to update name: ${exception.message}", Toast.LENGTH_SHORT).show()
-                                                    }
-                                            }}
-                                    }
-                                    override fun onCancelled(error: DatabaseError) {
-                                        Toast.makeText(this@UpdateProfile, error.toString(), Toast.LENGTH_SHORT).show()
-                                    }
-                                })
-
+                                dbRef.child("imageUrl").setValue(downloadUri.toString())
+                            }
+                            ?.addOnFailureListener { exception ->
+                                Toast.makeText(this, exception.toString(), Toast.LENGTH_SHORT).show()
                             }
                     }
             }
 
 
+            dbRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    if (snapshot.exists()) {
+                        val userName = snapshot.child("name").getValue(String::class.java)
 
+                        if (userName != null && userName != updateNameS) {
+                            dbRef.child("name").setValue(updateNameS)
+                            nameFlag = true
+                        }}
+                        if (profileUri !=  null)
+                            profileFlag = true
+
+                    if(nameFlag || profileFlag)
+                        Toast.makeText(this@UpdateProfile, "Profile Updated", Toast.LENGTH_LONG).show()
+
+                }
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(this@UpdateProfile, error.toString(), Toast.LENGTH_SHORT).show()
+                }
+            })
 
         }
+
     }
+
 }
