@@ -15,6 +15,9 @@
         android:theme="@style/Theme.FileDrive"
         tools:targetApi="31">
         <activity
+            android:name=".UploadImage"
+            android:exported="false" />
+        <activity
             android:name=".UpdateProfile"
             android:exported="false" />
         <activity
