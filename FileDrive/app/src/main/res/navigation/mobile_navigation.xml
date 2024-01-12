@@ -19,7 +19,7 @@
 
     <fragment
         android:id="@+id/nav_favImg"
-        android:name="com.example.filedrive.favourite"
+        android:name="com.example.filedrive.Favourite"
         android:label="@string/favourities"
         tools:layout="@layout/fragment_favourite" />
 
