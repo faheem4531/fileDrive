@@ -30,11 +30,11 @@
             android:layout_gravity="center"
             />
         <ImageView
-            android:id="@+id/noImageFoundBin"
+            android:id="@+id/noImageFoundFav"
             android:layout_width="100dp"
             android:layout_height="100dp"
             android:layout_gravity="center"
-            android:src="@drawable/baseline_delete_24"
+            android:src="@drawable/baseline_favorite_border_24"
             android:visibility="gone"/>
     </LinearLayout>
 

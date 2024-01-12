@@ -47,7 +47,7 @@ class Favourite : Fragment() {
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         listImages = arrayListOf()
         val imageLoader = root.findViewById<ProgressBar>(R.id.imageLoader)
-        val noImage = root.findViewById<ImageView>(R.id.noImageFoundBin)
+        val noImage = root.findViewById<ImageView>(R.id.noImageFoundFav)
 
         // Initialize dbRef after Firebase initialization
         userId?.let {
