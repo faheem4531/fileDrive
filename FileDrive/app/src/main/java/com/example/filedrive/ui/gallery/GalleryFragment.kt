@@ -113,10 +113,11 @@ class GalleryFragment : Fragment() {
                     { imgObj ->
                         val builder = AlertDialog.Builder(requireContext())
                         builder.setTitle("Options")
-                            .setItems(arrayOf("Delete", "Download")) { _, which ->
+                            .setItems(arrayOf("Delete", "Download", "Add to favorites")) { _, which ->
                                 when (which) {
                                     0 -> confirmDelete(imgObj)
                                     1 -> downloadImage(imgObj)
+                                    2 -> addFavorites(imgObj)
                                 }
                             }
                             .setNegativeButton("Cancel") { dialog, _ ->
@@ -235,6 +236,29 @@ class GalleryFragment : Fragment() {
             }
     }
 
+    private fun addFavorites(imageData: UrlDataClass) {
+
+        val userId = FirebaseAuth.getInstance().currentUser?.uid
+        if (userId != null) {
+
+            dbRef.addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    for (imageSnapshot in snapshot.children) {
+                        val urlData = imageSnapshot.getValue(UrlDataClass::class.java)
+                        if (urlData != null && urlData.url == imageData.url) {
+                            imageSnapshot.ref.child("favFlag").setValue(true)
+                            Toast.makeText(requireContext(), "Added", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    return
+                }
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(requireContext(), error.toString(), Toast.LENGTH_SHORT).show()
+                }
+            })
+        }
+    }
+
     private fun uploadImage(imageUri: Uri) {
 
 //        imageUri?.let {
@@ -253,7 +277,9 @@ class GalleryFragment : Fragment() {
                         //store image url in realTime database
                         var uniqueId = dbRef.push().key.toString()
 
-                        dbRef.child(uniqueId).setValue(UrlDataClass(uri.toString(),false))
+                        dbRef.child(uniqueId).setValue(UrlDataClass(uri.toString(),false,
+                            favFlag = false
+                        ))
                             .addOnSuccessListener {
                                 Toast.makeText(requireContext(), "upload successfully", Toast.LENGTH_SHORT).show()
                             }.addOnFailureListener {
