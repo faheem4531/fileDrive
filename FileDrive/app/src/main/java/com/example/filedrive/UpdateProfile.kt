@@ -118,7 +118,7 @@ class UpdateProfile : AppCompatActivity() {
 
         if(updateNameS.isEmpty())
         {
-            updateName.setError("Enter your name")
+            updateName.error = "Enter your name"
             updateName.requestFocus()
             return
         }

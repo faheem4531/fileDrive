@@ -66,7 +66,7 @@ class Favourite : Fragment() {
                     for (image in snapshot.children){
                         val urlData  = image.getValue(UrlDataClass::class.java)
                         if (urlData  != null && urlData.deleteFlag == false && urlData.favFlag == true) {
-                            listImages.add(urlData!!)
+                            listImages.add(urlData)
                         }
                     }
 
@@ -129,6 +129,11 @@ class Favourite : Fragment() {
         }
     }
 
+
+    override fun onResume() {
+        super.onResume()
+        (activity as? MainActivity)?.showFab()
+    }
 
     override fun onDestroyView() {
         super.onDestroyView()

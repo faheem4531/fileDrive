@@ -30,6 +30,7 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.storage
 import androidx.activity.result.ActivityResultCallback
 import androidx.recyclerview.widget.GridLayoutManager
+import com.example.filedrive.MainActivity
 import com.example.filedrive.ui.UrlDataClass
 import java.io.File
 
@@ -328,6 +329,12 @@ class GalleryFragment : Fragment() {
                         }
                 }
 //        }
+    }
+
+
+    override fun onResume() {
+        super.onResume()
+        (activity as? MainActivity)?.showFab()
     }
 
 

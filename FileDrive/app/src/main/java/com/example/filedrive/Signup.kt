@@ -98,7 +98,7 @@ class Signup : AppCompatActivity() {
             }
         }
 
-        signUpBtn.setOnClickListener(){
+        signUpBtn.setOnClickListener {
             post_signup_data_to_firebase()
         }
 
@@ -121,19 +121,19 @@ class Signup : AppCompatActivity() {
         //    Validation
         if(name_.isEmpty())
         {
-            name.setError("enter your name")
+            name.error = "enter your name"
             name.requestFocus()
             return
         }
         if(email_.isEmpty())
         {
-            email.setError("enter valid email address")
+            email.error = "enter valid email address"
             email.requestFocus()
             return
         }
         if(password_.isEmpty())
         {
-            password.setError("enter valid email address")
+            password.error = "enter valid email address"
             password.requestFocus()
             return
         }
@@ -151,7 +151,7 @@ class Signup : AppCompatActivity() {
         form.visibility =     View.GONE
         progress.visibility = View.VISIBLE
 
-        auth.createUserWithEmailAndPassword(email_,password_).addOnCompleteListener(){
+        auth.createUserWithEmailAndPassword(email_,password_).addOnCompleteListener {
 
             form.visibility=View.VISIBLE
             progress.visibility=View.GONE

@@ -12,6 +12,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.filedrive.MainActivity
 import com.example.filedrive.R
 import com.example.filedrive.databinding.FragmentSlideshowBinding
 import com.example.filedrive.ui.ImageAdapter
@@ -80,7 +81,7 @@ class SlideshowFragment : Fragment() {
                     for (image in snapshot.children){
                         val urlData  = image.getValue(UrlDataClass::class.java)
                         if (urlData  != null && urlData.deleteFlag == true) {
-                            listImages.add(urlData!!)
+                            listImages.add(urlData)
                         }
                     }
 
@@ -215,6 +216,13 @@ class SlideshowFragment : Fragment() {
 
     private fun restoreAllImages(imgObj: UrlDataClass) {
 
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (isAdded && isVisible && userVisibleHint) {
+            (activity as? MainActivity)?.hideFab()
+        }
     }
 
     override fun onDestroyView() {

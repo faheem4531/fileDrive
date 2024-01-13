@@ -41,13 +41,13 @@ class Login : AppCompatActivity() {
 //    Validation
         if(email_.isEmpty())
         {
-            email.setError("enter correct email address")
+            email.error = "enter correct email address"
             email.requestFocus()
             return
         }
         if(password_.isEmpty())
         {
-            password.setError("enter correct email address")
+            password.error = "enter correct email address"
             password.requestFocus()
             return
         }
@@ -62,7 +62,7 @@ class Login : AppCompatActivity() {
         form.visibility =     View.GONE
         progress.visibility = View.VISIBLE
 
-        auth.signInWithEmailAndPassword(email_,password_).addOnCompleteListener(){
+        auth.signInWithEmailAndPassword(email_,password_).addOnCompleteListener {
 
             form.visibility= View.VISIBLE
             progress.visibility= View.GONE

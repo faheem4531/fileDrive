@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.filedrive.MainActivity
 import com.example.filedrive.R
 import com.example.filedrive.ui.ImageAdapter
 import com.example.filedrive.ui.UrlDataClass
@@ -76,7 +77,7 @@ class HomeFragment : Fragment() {
                     for (image in snapshot.children){
                         val urlData  = image.getValue(UrlDataClass::class.java)
                         if (urlData  != null && urlData.deleteFlag != true) {
-                            listImages.add(urlData!!)
+                            listImages.add(urlData)
                         }
                     }
 
@@ -103,6 +104,12 @@ class HomeFragment : Fragment() {
 
         return root
     }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as? MainActivity)?.showFab()
+    }
+
 
     override fun onDestroyView() {
         super.onDestroyView()

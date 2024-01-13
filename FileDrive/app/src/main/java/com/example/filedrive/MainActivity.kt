@@ -14,7 +14,9 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.filedrive.databinding.ActivityMainBinding
 import android.content.Intent
 import android.view.MenuItem
+import android.view.View
 import android.widget.ImageView
+import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.navigation.ui.NavigationUI
@@ -45,8 +47,7 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(binding.appBarMain.toolbar)
 
         binding.appBarMain.fabAdd.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+            showPopupMenu(view)
         }
 
         val drawerLayout: DrawerLayout = binding.drawerLayout
@@ -89,6 +90,42 @@ class MainActivity : AppCompatActivity() {
     }
 
 
+    private fun showPopupMenu(view: View) {
+        val popupMenu = PopupMenu(this, view)
+        popupMenu.menuInflater.inflate(R.menu.menu_fab, popupMenu.menu)
+
+        popupMenu.setOnMenuItemClickListener { item: MenuItem ->
+            when (item.itemId) {
+                R.id.action_upload_image -> {
+                    // Replace this with your action for Upload Image
+                    Snackbar.make(view, "Upload Image", Snackbar.LENGTH_LONG).show()
+                    true
+                }
+                R.id.action_open_camera -> {
+                    // Replace this with your action for Open Camera
+                    Snackbar.make(view, "Open Camera", Snackbar.LENGTH_LONG).show()
+                    true
+                }
+                else -> false
+            }
+        }
+
+        // Set icons programmatically
+        val menu = popupMenu.menu
+        menu.findItem(R.id.action_upload_image)?.setIcon(R.drawable.baseline_cloud_upload_24)
+        menu.findItem(R.id.action_open_camera)?.setIcon(R.drawable.baseline_cloud_upload_24)
+
+
+        popupMenu.show()
+    }
+
+    fun hideFab() {
+        binding.appBarMain.fabAdd.visibility = View.GONE
+    }
+
+    fun showFab() {
+        binding.appBarMain.fabAdd.visibility = View.VISIBLE
+    }
 
     private fun displayUserInfo(auth: FirebaseAuth) {
 
@@ -137,7 +174,6 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)
@@ -173,14 +209,6 @@ class MainActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment_content_main)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-
-//        dbRefListener?.let {
-//            dbRef.removeEventListener(it)
-//        }
     }
 
 }
