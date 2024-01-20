@@ -26,9 +26,7 @@ class Signup : AppCompatActivity() {
     private lateinit var dbRef : DatabaseReference
     private  var dbStorage = Firebase.storage
 
-    private lateinit var imageView: ImageView
     private lateinit var btnGallery: Button
-    private lateinit var btnUploadImage: Button
 
     private var uri : Uri? = null
 
@@ -44,58 +42,19 @@ class Signup : AppCompatActivity() {
         dbStorage = FirebaseStorage.getInstance()
 
         var signUpBtn = findViewById <Button>  (R.id.signup_btn)
-        btnUploadImage = findViewById  (R.id.imageUploadBtn)
         btnGallery  =  findViewById   (R.id.imagePikerBtn)
-        imageView = findViewById (R.id.signupImageShow)
 
         var galleryImage = registerForActivityResult(
             ActivityResultContracts.GetContent(),
-            ActivityResultCallback {Url ->
-                Url?.let {
-                    imageView.setImageURI(Url)
-                    uri = Url
+            ActivityResultCallback {url ->
+                url?.let {
+                    uri = url
                 }
             }
         )
 
         btnGallery.setOnClickListener {
             galleryImage.launch("image/*")
-        }
-
-        btnUploadImage.setOnClickListener {
-
-            var progress = findViewById <LinearLayout>  (R.id.progress_id)
-            var form =     findViewById <LinearLayout>  (R.id.form_container)
-            var checkbox = findViewById <CheckBox> (R.id.imageChecked)
-
-            //upload image to fireBase store
-            uri?.let { // Check if uri is not null
-                form.visibility =     View.GONE
-                progress.visibility = View.VISIBLE
-
-                dbStorage.getReference("Profile Images").child(System.currentTimeMillis().toString())
-                    .putFile(it)
-                    .addOnSuccessListener { task ->
-                        task.metadata?.reference?.downloadUrl
-                            ?.addOnSuccessListener {downloadUri->
-
-                                uri = downloadUri
-                                form.visibility =     View.VISIBLE
-                                progress.visibility = View.GONE
-                                checkbox.visibility = View.VISIBLE
-                                imageView.visibility = View.GONE
-                                btnUploadImage.visibility = View.GONE
-                                btnGallery.visibility = View.GONE
-
-                                Toast.makeText(this, "Image Uploaded", Toast.LENGTH_SHORT).show()
-                            }
-                            ?.addOnFailureListener { exception ->
-                                Toast.makeText(this, exception.toString(), Toast.LENGTH_SHORT).show()
-                            }
-                    }
-            } ?: run {
-                Toast.makeText(this, "Please select an image first", Toast.LENGTH_SHORT).show()
-            }
         }
 
         signUpBtn.setOnClickListener {
@@ -157,6 +116,25 @@ class Signup : AppCompatActivity() {
             progress.visibility=View.GONE
 
             if (it.isSuccessful) {
+
+//                Store the image in firebase Store
+                uri?.let { // Check if uri is not null
+                    form.visibility =     View.GONE
+                    progress.visibility = View.VISIBLE
+
+                    dbStorage.getReference("Profile Images").child(System.currentTimeMillis().toString())
+                        .putFile(it)
+                        .addOnSuccessListener { task ->
+                            task.metadata?.reference?.downloadUrl
+                                ?.addOnSuccessListener {downloadUri->
+
+                                    uri = downloadUri
+                                }
+                                ?.addOnFailureListener { exception ->
+                                    Toast.makeText(this, exception.toString(), Toast.LENGTH_SHORT).show()
+                                }
+                        }
+                }
 
                 //     Store user Data in DB
                 val userId = FirebaseAuth.getInstance().currentUser?.uid
