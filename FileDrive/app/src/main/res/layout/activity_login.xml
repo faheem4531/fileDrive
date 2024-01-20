@@ -7,6 +7,7 @@
     tools:context=".Login"
     android:orientation="vertical"
     android:gravity="center"
+    android:background="@color/Grey"
     android:paddingHorizontal="20dp">
 
     <!--    Form Layout Wrapper -->

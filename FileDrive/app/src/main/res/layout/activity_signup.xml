@@ -9,6 +9,7 @@
     android:orientation="vertical"
     android:foregroundGravity="center"
     android:paddingHorizontal="20dp"
+    android:background="@color/Grey"
     android:gravity="center"
     >
     <!--    Form Layout Wraper -->
