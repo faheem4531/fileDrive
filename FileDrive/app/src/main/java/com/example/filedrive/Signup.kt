@@ -26,8 +26,6 @@ class Signup : AppCompatActivity() {
     private lateinit var dbRef : DatabaseReference
     private  var dbStorage = Firebase.storage
 
-    private lateinit var btnGallery: Button
-
     private var uri : Uri? = null
 
 
@@ -42,13 +40,16 @@ class Signup : AppCompatActivity() {
         dbStorage = FirebaseStorage.getInstance()
 
         var signUpBtn = findViewById <Button>  (R.id.signup_btn)
-        btnGallery  =  findViewById   (R.id.imagePikerBtn)
+        var btnGallery = findViewById<ImageView> (R.id.imagePikerBtn)
+        var checkedBox = findViewById<CheckBox>(R.id.imageChecked)
 
         var galleryImage = registerForActivityResult(
             ActivityResultContracts.GetContent(),
             ActivityResultCallback {url ->
                 url?.let {
                     uri = url
+                    btnGallery.visibility = View.GONE
+                    checkedBox.visibility = View.VISIBLE
                 }
             }
         )
@@ -127,7 +128,6 @@ class Signup : AppCompatActivity() {
                         .addOnSuccessListener { task ->
                             task.metadata?.reference?.downloadUrl
                                 ?.addOnSuccessListener {downloadUri->
-
                                     uri = downloadUri
                                 }
                                 ?.addOnFailureListener { exception ->

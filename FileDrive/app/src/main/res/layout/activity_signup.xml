@@ -78,7 +78,7 @@
                 />
         </LinearLayout>
 
-        <!--    Passward Layout -->
+        <!--    Password Layout -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -108,40 +108,37 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
             >
+
+            <TextView
+                android:layout_width="130dp"
+                android:layout_height="wrap_content"
+                android:text="Upload Profile"
+                android:textSize="20sp"
+                android:layout_marginRight="20dp"/>
+
             <LinearLayout
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:layout_gravity="center_vertical">
+                android:layout_height="27dp"
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="120dp">
 
-                <TextView
-                    android:layout_width="130dp"
-                    android:layout_height="wrap_content"
-                    android:text="Select Image"
-                    android:textSize="20sp"
-                    android:layout_marginRight="20dp"/>
-
-                <Button
+                <ImageView
                     android:id="@+id/imagePikerBtn"
-                    android:layout_marginTop="10dp"
-                    android:layout_width="150dp"
-                    android:layout_height="50dp"
-                    android:text="select image"
-                    android:backgroundTint="@color/teal_700"
-                    />
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_marginLeft="20dp"
+                    android:src="@drawable/baseline_file_upload_24" />
+
+                <CheckBox
+                    android:id="@+id/imageChecked"
+                    android:layout_width="26dp"
+                    android:layout_height="match_parent"
+                    android:checked="true"
+                    android:enabled="false"
+                    android:visibility="gone" />
 
             </LinearLayout>
 
-
-            <CheckBox
-                android:id="@+id/imageChecked"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="80dp"
-                android:checked="true"
-                android:text="uploaded"
-                android:visibility="gone"
-                android:enabled="false" />
         </LinearLayout>
 
 
