@@ -7,6 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".Favourite"
     android:padding="6dp"
+    android:background="@color/Grey"
     >
 
     <androidx.recyclerview.widget.RecyclerView

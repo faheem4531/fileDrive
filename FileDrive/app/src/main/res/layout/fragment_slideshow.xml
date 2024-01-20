@@ -5,6 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".ui.slideshow.SlideshowFragment"
+    android:background="@color/Grey"
     android:padding="10dp">
 
     <androidx.recyclerview.widget.RecyclerView
