@@ -40,7 +40,7 @@ class GalleryFragment : Fragment() {
 
     //storing variables
     private  var dbStorage= Firebase.storage
-    private lateinit var uploadImage : ImageView
+//    private lateinit var uploadImage : ImageView
     private lateinit var progresGallery : ProgressBar
 
     private var uri : Uri?= null
@@ -64,8 +64,8 @@ class GalleryFragment : Fragment() {
 
 
 
-        uploadImage  = root.findViewById (R.id.uploadImage)
-        progresGallery = root.findViewById (R.id.uploadImageProgress)
+//        uploadImage  = root.findViewById (R.id.uploadImage)
+//        progresGallery = root.findViewById (R.id.uploadImageProgress)
         //=>  Code Starting
         recyclerView= root.findViewById (R.id.recycler)
         listImages = arrayListOf()
@@ -79,20 +79,20 @@ class GalleryFragment : Fragment() {
             dbRef = FirebaseDatabase.getInstance().getReference("Users").child(userId)
                 .child("galleryImagesUrl")
         }
-
-        var galleryImage = registerForActivityResult(
-            ActivityResultContracts.GetContent(),
-            ActivityResultCallback  {url->
-                url?.let{
-                    uri = url
-                    uploadImage(url)
-                }
-            }
-        )
-
-        uploadImage.setOnClickListener{
-            galleryImage.launch("image/*")
-        }
+//
+//        var galleryImage = registerForActivityResult(
+//            ActivityResultContracts.GetContent(),
+//            ActivityResultCallback  {url->
+//                url?.let{
+//                    uri = url
+//                    uploadImage(url)
+//                }
+//            }
+//        )
+//
+//        uploadImage.setOnClickListener{
+//            galleryImage.launch("image/*")
+//        }
 
 
         dbRefListener = dbRef.addValueEventListener(object :ValueEventListener{
@@ -292,44 +292,44 @@ class GalleryFragment : Fragment() {
         }
     }
 
-    private fun uploadImage(imageUri: Uri) {
-
-//        imageUri?.let {
-            uploadImage.visibility = View.GONE
-            progresGallery.visibility = View.VISIBLE
-
-            var userId = FirebaseAuth.getInstance().currentUser?.uid
-
-            dbStorage.getReference("Gallery Images").child(userId.toString())
-                .child(System.currentTimeMillis().toString())
-                .putFile(imageUri)
-                .addOnSuccessListener { task ->
-                    task.metadata?.reference?.downloadUrl?.addOnSuccessListener { url ->
-                        uri = url
-
-                        //store image url in realTime database
-                        var uniqueId = dbRef.push().key.toString()
-
-                        dbRef.child(uniqueId).setValue(UrlDataClass(uri.toString(),false,
-                            favFlag = false
-                        ))
-                            .addOnSuccessListener {
-                                Toast.makeText(requireContext(), "upload successfully", Toast.LENGTH_SHORT).show()
-                            }.addOnFailureListener {
-                            Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_SHORT).show()
-                        }
-
-                        uploadImage.visibility = View.VISIBLE
-                        progresGallery.visibility = View.GONE
-//                        return@addOnSuccessListener
-                    }
-                        ?.addOnFailureListener {
-                            Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_SHORT)
-                                .show()
-                        }
-                }
-//        }
-    }
+//    private fun uploadImage(imageUri: Uri) {
+//
+////        imageUri?.let {
+//            uploadImage.visibility = View.GONE
+//            progresGallery.visibility = View.VISIBLE
+//
+//            var userId = FirebaseAuth.getInstance().currentUser?.uid
+//
+//            dbStorage.getReference("Gallery Images").child(userId.toString())
+//                .child(System.currentTimeMillis().toString())
+//                .putFile(imageUri)
+//                .addOnSuccessListener { task ->
+//                    task.metadata?.reference?.downloadUrl?.addOnSuccessListener { url ->
+//                        uri = url
+//
+//                        //store image url in realTime database
+//                        var uniqueId = dbRef.push().key.toString()
+//
+//                        dbRef.child(uniqueId).setValue(UrlDataClass(uri.toString(),false,
+//                            favFlag = false
+//                        ))
+//                            .addOnSuccessListener {
+//                                Toast.makeText(requireContext(), "upload successfully", Toast.LENGTH_SHORT).show()
+//                            }.addOnFailureListener {
+//                            Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_SHORT).show()
+//                        }
+//
+//                        uploadImage.visibility = View.VISIBLE
+//                        progresGallery.visibility = View.GONE
+////                        return@addOnSuccessListener
+//                    }
+//                        ?.addOnFailureListener {
+//                            Toast.makeText(requireContext(), it.message.toString(), Toast.LENGTH_SHORT)
+//                                .show()
+//                        }
+//                }
+////        }
+//    }
 
 
     override fun onResume() {
