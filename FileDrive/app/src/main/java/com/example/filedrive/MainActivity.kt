@@ -13,23 +13,40 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.example.filedrive.databinding.ActivityMainBinding
 import android.content.Intent
+import android.net.Uri
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
 import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.navigation.ui.NavigationUI
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
+import com.example.filedrive.ui.UrlDataClass
+import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.storage.storage
 
 class MainActivity : AppCompatActivity() {
+
+
+//    late declerations
+    private var userId = FirebaseAuth.getInstance().currentUser?.uid
+    private var uri : Uri?= null
+    private lateinit var galleryImage: ActivityResultLauncher<String>
+    private  var dbStorage= Firebase.storage
+    private lateinit var dbRef: DatabaseReference
+
 
     private var dbRefListener: ValueEventListener? = null
 
@@ -45,6 +62,20 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setSupportActionBar(binding.appBarMain.toolbar)
+
+        userId?.let {
+            dbRef = FirebaseDatabase.getInstance().getReference("Users").child(userId.toString())
+        }
+
+        galleryImage = registerForActivityResult(
+            ActivityResultContracts.GetContent(),
+            ActivityResultCallback  {url->
+                url?.let{
+                    uri = url
+                    uploadImage(url)
+                }
+            }
+        )
 
         binding.appBarMain.fabAdd.setOnClickListener { view ->
             showPopupMenu(view)
@@ -98,7 +129,8 @@ class MainActivity : AppCompatActivity() {
             when (item.itemId) {
                 R.id.action_upload_image -> {
                     // Replace this with your action for Upload Image
-                    Snackbar.make(view, "Upload Image", Snackbar.LENGTH_LONG).show()
+                    galleryImage.launch("image/*")
+//                    Snackbar.make(view, "Upload Image", Snackbar.LENGTH_LONG).show()
                     true
                 }
                 R.id.action_open_camera -> {
@@ -173,6 +205,40 @@ class MainActivity : AppCompatActivity() {
         })
 
     }
+
+    private fun uploadImage(imageUri: Uri) {
+
+//        imageUri?.let {
+        dbStorage.getReference("Gallery Images").child(userId.toString())
+            .child(System.currentTimeMillis().toString())
+            .putFile(imageUri)
+            .addOnSuccessListener { task ->
+                task.metadata?.reference?.downloadUrl?.addOnSuccessListener { url ->
+                    uri = url
+
+                    //store image url in realTime database
+                    var uniqueId = dbRef.push().key.toString()
+
+                    dbRef.child("galleryImagesUrl").child(uniqueId).setValue(
+                        UrlDataClass(uri.toString(),false,
+                        favFlag = false
+                    )
+                    )
+                        .addOnSuccessListener {
+                            Toast.makeText(this, "upload successfully", Toast.LENGTH_SHORT).show()
+                        }.addOnFailureListener {
+                            Toast.makeText(this, it.message.toString(), Toast.LENGTH_SHORT).show()
+                        }
+
+                }
+                    ?.addOnFailureListener {
+                        Toast.makeText(this, it.message.toString(), Toast.LENGTH_SHORT)
+                            .show()
+                    }
+            }
+//        }
+    }
+
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.

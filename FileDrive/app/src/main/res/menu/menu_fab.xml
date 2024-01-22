@@ -3,8 +3,7 @@
 
     <item
         android:id="@+id/action_upload_image"
-        android:icon="@drawable/baseline_cloud_upload_24"
-        android:title=""
+        android:title="Image upload"
         app:showAsAction="never" />
 
     <item
