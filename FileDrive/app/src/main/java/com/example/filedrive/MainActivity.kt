@@ -202,6 +202,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun uploadImage(imageUri: Uri) {
+        binding.appBarMain.fabAdd.setImageResource(R.drawable.baseline_access_time_24)
 
         dbStorage.getReference("Gallery Images").child(userId.toString())
             .child(System.currentTimeMillis().toString())
@@ -219,6 +220,8 @@ class MainActivity : AppCompatActivity() {
                     )
                     )
                         .addOnSuccessListener {
+                            binding.appBarMain.fabAdd.setImageResource(R.drawable.baseline_drive_folder_upload_24)
+
                             Toast.makeText(this, "upload successfully", Toast.LENGTH_SHORT).show()
                         }.addOnFailureListener {
                             Toast.makeText(this, it.message.toString(), Toast.LENGTH_SHORT).show()
