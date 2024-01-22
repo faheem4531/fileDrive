@@ -29,7 +29,6 @@ import com.bumptech.glide.load.resource.bitmap.CircleCrop
 import com.example.filedrive.ui.UrlDataClass
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
@@ -40,7 +39,7 @@ import com.google.firebase.storage.storage
 class MainActivity : AppCompatActivity() {
 
 
-//    late declerations
+//    late declarations
     private var userId = FirebaseAuth.getInstance().currentUser?.uid
     private var uri : Uri?= null
     private lateinit var galleryImage: ActivityResultLauncher<String>
@@ -52,7 +51,6 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
-    private lateinit var currentUser: FirebaseUser
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -128,13 +126,10 @@ class MainActivity : AppCompatActivity() {
         popupMenu.setOnMenuItemClickListener { item: MenuItem ->
             when (item.itemId) {
                 R.id.action_upload_image -> {
-                    // Replace this with your action for Upload Image
                     galleryImage.launch("image/*")
-//                    Snackbar.make(view, "Upload Image", Snackbar.LENGTH_LONG).show()
                     true
                 }
                 R.id.action_open_camera -> {
-                    // Replace this with your action for Open Camera
                     Snackbar.make(view, "Open Camera", Snackbar.LENGTH_LONG).show()
                     true
                 }
@@ -208,7 +203,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun uploadImage(imageUri: Uri) {
 
-//        imageUri?.let {
         dbStorage.getReference("Gallery Images").child(userId.toString())
             .child(System.currentTimeMillis().toString())
             .putFile(imageUri)
@@ -236,9 +230,7 @@ class MainActivity : AppCompatActivity() {
                             .show()
                     }
             }
-//        }
     }
-
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
