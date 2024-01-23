@@ -13,7 +13,9 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.appcompat.app.AppCompatActivity
 import com.example.filedrive.databinding.ActivityMainBinding
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Environment
 import android.view.MenuItem
 import android.view.View
 import android.widget.ImageView
@@ -23,6 +25,9 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultCallback
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.navigation.ui.NavigationUI
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.resource.bitmap.CircleCrop
@@ -35,6 +40,12 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.storage
+import java.io.File
+import java.util.Date
+import java.util.Locale
+import java.io.IOException
+import java.text.SimpleDateFormat
+import android.Manifest
 
 class MainActivity : AppCompatActivity() {
 
@@ -45,7 +56,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var galleryImage: ActivityResultLauncher<String>
     private  var dbStorage= Firebase.storage
     private lateinit var dbRef: DatabaseReference
+    private lateinit var takePicture: ActivityResultLauncher<Uri>
 
+
+    private val CAMERA_PERMISSION_REQUEST_CODE = 123
 
     private var dbRefListener: ValueEventListener? = null
 
@@ -74,6 +88,16 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         )
+
+        takePicture = registerForActivityResult(ActivityResultContracts.TakePicture()) { success: Boolean ->
+            if (success) {
+                // Image capture was successful, now you can upload the image
+                uri?.let { uploadImage(it) }
+            } else {
+                // Image capture failed or was canceled
+                Toast.makeText(this, "Image capture failed", Toast.LENGTH_SHORT).show()
+            }
+        }
 
         binding.appBarMain.fabAdd.setOnClickListener { view ->
             showPopupMenu(view)
@@ -130,7 +154,8 @@ class MainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.action_open_camera -> {
-                    Snackbar.make(view, "Open Camera", Snackbar.LENGTH_LONG).show()
+//                    Snackbar.make(view, "Open Camera", Snackbar.LENGTH_LONG).show()
+                    openCamera()
                     true
                 }
                 else -> false
@@ -235,6 +260,84 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
+    private fun openCamera() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestCameraPermission()
+            return
+        }
+
+        val photoFile: File? = createImageFile()
+
+        photoFile?.let {
+            val photoUri: Uri = FileProvider.getUriForFile(
+                this,
+                "${packageName}.file-provider",
+                it
+            )
+            takePicture.launch(photoUri)
+        }
+    }
+
+
+    private fun requestCameraPermission() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.CAMERA),
+                CAMERA_PERMISSION_REQUEST_CODE
+            )
+        } else {
+            // Permission already granted
+            openCamera()
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            CAMERA_PERMISSION_REQUEST_CODE -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission granted, proceed with camera operation
+                    openCamera()
+                } else {
+                    // Permission denied
+                    Toast.makeText(
+                        this,
+                        "Camera permission denied. Cannot open camera.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+            // ... handle other permission requests if needed
+        }
+    }
+
+
+    @Throws(IOException::class)
+    private fun createImageFile(): File? {
+        // Create an image file name
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val storageDir: File? = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        return File.createTempFile(
+            "JPEG_${timeStamp}_", /* prefix */
+            ".jpg", /* suffix */
+            storageDir /* directory */
+        )
+    }
+
+
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.main, menu)
@@ -273,3 +376,155 @@ class MainActivity : AppCompatActivity() {
     }
 
 }
+
+
+
+
+
+
+
+
+
+
+//
+//class MainActivity : AppCompatActivity() {
+//
+//
+//    //    late declarations
+//    private var userId = FirebaseAuth.getInstance().currentUser?.uid
+//    private var uri : Uri?= null
+//    private lateinit var galleryImage: ActivityResultLauncher<String>
+//    private  var dbStorage= Firebase.storage
+//    private lateinit var dbRef: DatabaseReference
+//    private lateinit var takePicture: ActivityResultLauncher<Uri>
+//
+//    private lateinit var binding: ActivityMainBinding
+//
+//
+//    override fun onCreate(savedInstanceState: Bundle?) {
+//        super.onCreate(savedInstanceState)
+//
+//        binding = ActivityMainBinding.inflate(layoutInflater)
+//        setContentView(binding.root)
+//
+//        setSupportActionBar(binding.appBarMain.toolbar)
+//
+//        userId?.let {
+//            dbRef = FirebaseDatabase.getInstance().getReference("Users").child(userId.toString())
+//        }
+//
+//        galleryImage = registerForActivityResult(
+//            ActivityResultContracts.GetContent(),
+//            ActivityResultCallback  {url->
+//                url?.let{
+//                    uri = url
+//                    uploadImage(url)
+//                }
+//            }
+//        )
+//
+//        takePicture = registerForActivityResult(
+//            ActivityResultContracts.TakePicture()) { success: Boolean ->
+//            if (success) {
+//                // Image capture was successful, now you can upload the image
+//                uri?.let { uploadImage(it) }
+//            } else {
+//                // Image capture failed or was canceled
+//                Toast.makeText(this, "Image capture failed", Toast.LENGTH_SHORT).show()
+//            }
+//        }
+//
+//        binding.appBarMain.fabAdd.setOnClickListener { view ->
+//            showPopupMenu(view)
+//        }
+//
+//    }
+//
+//
+//    private fun showPopupMenu(view: View) {
+//        val popupMenu = PopupMenu(this, view)
+//        popupMenu.menuInflater.inflate(R.menu.menu_fab, popupMenu.menu)
+//
+//        popupMenu.setOnMenuItemClickListener { item: MenuItem ->
+//            when (item.itemId) {
+//                R.id.action_upload_image -> {
+//                    galleryImage.launch("image/*")
+//                    true
+//                }
+//                R.id.action_open_camera -> {
+////                    Snackbar.make(view, "Open Camera", Snackbar.LENGTH_LONG).show()
+//                    openCamera()
+//                    true
+//                }
+//                else -> false
+//            }
+//        }
+//
+//        // Set icons programmatically
+//        val menu = popupMenu.menu
+//        menu.findItem(R.id.action_upload_image)?.setIcon(R.drawable.baseline_cloud_upload_24)
+//        menu.findItem(R.id.action_open_camera)?.setIcon(R.drawable.baseline_cloud_upload_24)
+//
+//
+//        popupMenu.show()
+//    }
+//    private fun uploadImage(imageUri: Uri) {
+//        binding.appBarMain.fabAdd.setImageResource(R.drawable.baseline_access_time_24)
+//
+//        dbStorage.getReference("Gallery Images").child(userId.toString())
+//            .child(System.currentTimeMillis().toString())
+//            .putFile(imageUri)
+//            .addOnSuccessListener { task ->
+//                task.metadata?.reference?.downloadUrl?.addOnSuccessListener { url ->
+//                    uri = url
+//
+//                    //store image url in realTime database
+//                    var uniqueId = dbRef.push().key.toString()
+//
+//                    dbRef.child("galleryImagesUrl").child(uniqueId).setValue(
+//                        UrlDataClass(uri.toString(),false,
+//                            favFlag = false
+//                        )
+//                    )
+//                        .addOnSuccessListener {
+//                            binding.appBarMain.fabAdd.setImageResource(R.drawable.baseline_drive_folder_upload_24)
+//
+//                            Toast.makeText(this, "upload successfully", Toast.LENGTH_SHORT).show()
+//                        }.addOnFailureListener {
+//                            Toast.makeText(this, it.message.toString(), Toast.LENGTH_SHORT).show()
+//                        }
+//
+//                }
+//                    ?.addOnFailureListener {
+//                        Toast.makeText(this, it.message.toString(), Toast.LENGTH_SHORT)
+//                            .show()
+//                    }
+//            }
+//    }
+//
+//    private fun openCamera() {
+//        val photoFile: File? = createImageFile()
+//
+//        photoFile?.let {
+//            val photoUri: Uri = FileProvider.getUriForFile(
+//                this,
+//                "${packageName}.file-provider",
+//                it
+//            )
+//            takePicture.launch(photoUri)
+//        }
+//    }
+//
+//    @Throws(IOException::class)
+//    private fun createImageFile(): File? {
+//        // Create an image file name
+//        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+//        val storageDir: File? = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+//        return File.createTempFile(
+//            "JPEG_${timeStamp}_", /* prefix */
+//            ".jpg", /* suffix */
+//            storageDir /* directory */
+//        )
+//    }
+//
+//}
